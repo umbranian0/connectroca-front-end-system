@@ -1,21 +1,39 @@
-# ConnectTroca Frontend
+﻿# Conectra Frontend Prototype
 
-Base frontend for the ConnectTroca mockup built with React and Vite.
+React + Vite frontend prototype prepared to connect with a Strapi backend.
 
-## Project Structure
+## Implemented Prototype Scope
 
-- `src/`: application code
-- `planning_project/`: PDF, ERD, WBS and planning assets
-- `Dockerfile`: frontend container image
-- `docker-compose.yml`: frontend development environment
+- Login page using Strapi local auth (`/api/auth/local`)
+- Logout action with token cleanup
+- Protected `Users` index page (`/api/users`)
+- Protected `Activities` index page (`/api/activities` by default)
+- Basic folder architecture for modular growth
 
-## Prerequisites
+## Folder Structure
 
-- Node.js 18+ for local frontend work
-- npm 9+
-- Docker Desktop if you want to run the containerized environment
+```text
+src/
+  api/                 # HTTP client and Strapi API modules
+  app/                 # top-level app composition and routing
+  components/          # reusable UI and routing components
+  features/auth/       # auth context and hooks
+  layouts/             # authenticated shell/layout
+  pages/               # route pages
+  styles/              # global styles
+  utils/               # Strapi normalization helpers
+```
 
-## Local Frontend Commands
+## Environment Variables
+
+Create a local `.env` file from `.env.example`.
+
+- `VITE_STRAPI_URL`: Strapi base URL
+- `VITE_STRAPI_AUTH_ENDPOINT`: auth endpoint (default `/api/auth/local`)
+- `VITE_STRAPI_USERS_ENDPOINT`: users endpoint (default `/api/users`)
+- `VITE_STRAPI_ACTIVITIES_ENDPOINT`: activities endpoint (default `/api/activities`)
+
+## Local Development
 
 Install dependencies:
 
@@ -23,93 +41,24 @@ Install dependencies:
 npm install
 ```
 
-Run the development server:
+Run development server:
 
 ```bash
 npm run dev
 ```
 
-Run the development server on `0.0.0.0`:
-
-```bash
-npm run dev:host
-```
-
-Create a production build:
+Build for production:
 
 ```bash
 npm run build
 ```
 
-Preview the built app:
+## Strapi Configuration Notes
 
-```bash
-npm run preview
-```
+For this prototype to work, Strapi must allow:
 
-The frontend is available at:
+- `auth/local` login
+- authenticated access to `/api/users` (or custom users endpoint)
+- access to the configured activities endpoint
 
-- `http://localhost:5173` for `npm run dev`
-- `http://localhost:4173` for `npm run preview` when you pass host/port explicitly
-
-## Docker Commands
-
-Build and start the frontend environment:
-
-```bash
-npm run docker:up
-```
-
-Stop the frontend environment:
-
-```bash
-npm run docker:down
-```
-
-Direct Docker Compose commands:
-
-```bash
-docker compose up --build
-docker compose down
-```
-
-The container starts the Vite development server and exposes it on `http://localhost:5173`.
-
-## Full Workspace Commands
-
-There is a sibling directory at `../backend_conectra`, but it is currently an upstream Strapi monorepo, not a project-specific API app wired to this frontend.
-
-What exists today:
-
-- this repository contains the runnable frontend
-- `../backend_conectra/docker-compose.yml` starts PostgreSQL and MySQL infrastructure only
-- there is no dedicated backend application entrypoint in the sibling folder that matches this frontend yet
-
-If you still want to bring up the frontend together with the backend database containers, use:
-
-```bash
-npm run docker:up:full
-```
-
-That expands to:
-
-```bash
-docker compose -f docker-compose.yml -f ../backend_conectra/docker-compose.yml up --build
-```
-
-To stop that combined environment:
-
-```bash
-npm run docker:down:full
-```
-
-## Files Added For Containerization
-
-- [Dockerfile](./Dockerfile)
-- [docker-compose.yml](./docker-compose.yml)
-- [.dockerignore](./.dockerignore)
-
-## Notes
-
-- The `build` script uses a reduced Node heap because this machine is low on available virtual memory.
-- The planning PDF and images remain under `planning_project/` and are excluded from the Docker build context.
+If your content type uses another route, set `VITE_STRAPI_ACTIVITIES_ENDPOINT` accordingly.

@@ -2,7 +2,7 @@
   "name": "connecttroca-ui",
   "private": true,
   "version": "0.1.0",
-  "description": "Base frontend for the ConnectTroca mobile prototype",
+  "description": "Strapi-connected frontend prototype for login, users and activities pages",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,11 +18,11 @@
   "keywords": [
     "react",
     "vite",
-    "prototype",
-    "frontend"
+    "strapi",
+    "frontend",
+    "prototype"
   ],
   "dependencies": {
-    "lucide-react": "^0.511.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^6.30.3"
