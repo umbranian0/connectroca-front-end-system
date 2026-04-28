@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ChatbotPage from '../pages/ChatbotPage';
 import DashboardPage from '../pages/DashboardPage';
+import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import FormExamplesPage from '../pages/FormExamplesPage';
 import ForumPage from '../pages/ForumPage';
 import GroupChatPage from '../pages/GroupChatPage';
@@ -11,6 +12,7 @@ import LoginPage from '../pages/LoginPage';
 import MaterialsPage from '../pages/MaterialsPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import ProfilePage from '../pages/ProfilePage';
+import RegisterPage from '../pages/RegisterPage';
 import TopicDetailPage from '../pages/TopicDetailPage';
 
 function AppRouter() {
@@ -30,6 +32,8 @@ function AppRouter() {
       </Route>
 
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

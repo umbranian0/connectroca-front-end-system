@@ -869,6 +869,19 @@ input {
   color: var(--brand);
 }
 
+.auth-inline-link,
+.status-inline-link {
+  color: var(--brand);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-inline-link:hover,
+.status-inline-link:hover {
+  filter: brightness(1.05);
+}
+
 .button {
   border: 1px solid transparent;
   border-radius: 0.7rem;
@@ -1109,5 +1122,3 @@ input {
     display: none;
   }
 }
-
-

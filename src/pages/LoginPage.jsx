@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 
 function LoginPage() {
@@ -7,7 +7,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
 
-  const [identifier, setIdentifier] = useState('');
+  const [identifier, setIdentifier] = useState(location.state?.registeredEmail ?? '');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,7 +52,7 @@ function LoginPage() {
         </div>
 
         <h1>Acesse a plataforma</h1>
-        <p>FaÁa login ou registre-se para comeÁar a construir seus projetos ainda hoje.</p>
+        <p>Fa√ßa login ou registre-se para come√ßar a construir seus projetos ainda hoje.</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label htmlFor="identifier">E-mail</label>
@@ -69,7 +69,9 @@ function LoginPage() {
 
           <div className="auth-label-row">
             <label htmlFor="password">Senha</label>
-            <span>Esqueceu a senha?</span>
+            <Link to="/forgot-password" className="auth-inline-link">
+              Esqueceu a senha?
+            </Link>
           </div>
           <input
             id="password"
@@ -92,7 +94,10 @@ function LoginPage() {
         </form>
 
         <p className="auth-signup-copy">
-          Ainda n„o tem uma conta? <strong>Inscreva-se</strong>
+          Ainda n√£o tem uma conta?{' '}
+          <Link className="auth-inline-link" to="/register">
+            Inscreva-se
+          </Link>
         </p>
 
         {error ? <p className="status-error">{error}</p> : null}
