@@ -1,6 +1,7 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getStrapiBaseUrl } from '../api/httpClient';
 import { useI18n } from '../features/i18n/useI18n';
+import BrandLogo from './BrandLogo';
 
 function AppHeader({ userName, isAuthenticated, onLogout, isDarkTheme, onToggleTheme }) {
   const { language, setLanguage, t } = useI18n();
@@ -9,8 +10,7 @@ function AppHeader({ userName, isAuthenticated, onLogout, isDarkTheme, onToggleT
     <header className="app-header">
       <div className="brand-wrap">
         <Link to="/" className="app-brand">
-          <img
-            src="/assets/connectroca_logo.png"
+          <BrandLogo
             alt="ConnectTroca logo"
             className="brand-logo"
             loading="eager"

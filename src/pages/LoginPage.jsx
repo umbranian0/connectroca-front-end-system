@@ -1,6 +1,7 @@
-Ôªøimport { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
+import BrandLogo from '../components/BrandLogo';
 
 function LoginPage() {
   const location = useLocation();
@@ -44,8 +45,7 @@ function LoginPage() {
     <div className="auth-shell">
       <section className="auth-card figma-login-card">
         <div className="login-brand">
-          <img
-            src="/assets/connectroca_logo.png"
+          <BrandLogo
             alt="ConnectTroca logo"
             className="brand-logo"
             loading="eager"
@@ -58,7 +58,7 @@ function LoginPage() {
         </div>
 
         <h1>Acesse a plataforma</h1>
-        <p>Fa√ßa login ou registre-se para come√ßar a construir seus projetos ainda hoje.</p>
+        <p>FaÁa login ou registre-se para comeÁar a construir seus projetos ainda hoje.</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label htmlFor="identifier">E-mail</label>
@@ -100,7 +100,7 @@ function LoginPage() {
         </form>
 
         <p className="auth-signup-copy">
-          Ainda n√£o tem uma conta?{' '}
+          Ainda n„o tem uma conta?{' '}
           <Link className="auth-inline-link" to="/register">
             Inscreva-se
           </Link>

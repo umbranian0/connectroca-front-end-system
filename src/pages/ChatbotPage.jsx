@@ -1,4 +1,6 @@
-﻿function ChatbotPage() {
+import BrandLogo from '../components/BrandLogo';
+
+function ChatbotPage() {
   return (
     <section className="page-section chatbot-page">
       <header className="chatbot-hero">
@@ -10,8 +12,7 @@
           Chat Bot!
         </h1>
         <div className="chatbot-logo">
-          <img
-            src="/assets/connectroca_logo.png"
+          <BrandLogo
             alt="ConnectTroca chatbot logo"
             className="chatbot-logo-image"
             loading="lazy"

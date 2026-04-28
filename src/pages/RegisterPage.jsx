@@ -1,6 +1,7 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { registerUserAccount } from '../api/authApi';
+import BrandLogo from '../components/BrandLogo';
 import { useAuth } from '../features/auth/useAuth';
 
 function RegisterPage() {
@@ -84,8 +85,7 @@ function RegisterPage() {
     <div className="auth-shell">
       <section className="auth-card figma-login-card">
         <div className="login-brand">
-          <img
-            src="/assets/connectroca_logo.png"
+          <BrandLogo
             alt="ConnectTroca logo"
             className="brand-logo"
             loading="eager"

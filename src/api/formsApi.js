@@ -1,7 +1,7 @@
+import { registerUserAccount } from './authApi';
 import { request } from './httpClient';
 import { normalizeStrapiSingle } from '../utils/strapi';
 
-const USERS_ENDPOINT = import.meta.env.VITE_STRAPI_USERS_ENDPOINT ?? '/api/users';
 const POSTS_ENDPOINT = import.meta.env.VITE_STRAPI_POSTS_ENDPOINT ?? '/api/posts';
 const GROUPS_ENDPOINT = import.meta.env.VITE_STRAPI_GROUPS_ENDPOINT ?? '/api/groups';
 
@@ -11,23 +11,7 @@ function toOptionalInteger(value) {
 }
 
 export async function createAccount(payload, token) {
-  const body = {
-    username: payload.username.trim(),
-    email: payload.email.trim(),
-    password: payload.password,
-  };
-
-  const response = await request(USERS_ENDPOINT, {
-    method: 'POST',
-    token,
-    body,
-  });
-
-  if (response?.data) {
-    return normalizeStrapiSingle(response);
-  }
-
-  return response?.user ?? response;
+  return registerUserAccount(payload, token);
 }
 
 export async function createPost(payload, token) {
