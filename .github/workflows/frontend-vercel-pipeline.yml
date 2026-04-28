@@ -27,6 +27,7 @@ jobs:
         run: npm run build
 
       - name: Sync Vercel env vars from template
+        continue-on-error: true
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
