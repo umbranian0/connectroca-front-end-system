@@ -1,4 +1,4 @@
-function ChatbotPage() {
+﻿function ChatbotPage() {
   return (
     <section className="page-section chatbot-page">
       <header className="chatbot-hero">
@@ -9,7 +9,15 @@ function ChatbotPage() {
           <br />
           Chat Bot!
         </h1>
-        <div className="chatbot-logo">?</div>
+        <div className="chatbot-logo">
+          <img
+            src="/assets/connectroca_logo.png"
+            alt="ConnectTroca chatbot logo"
+            className="chatbot-logo-image"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
       </header>
 
       <footer className="chat-input-wrap">

@@ -9,7 +9,13 @@ function AppHeader({ userName, isAuthenticated, onLogout, isDarkTheme, onToggleT
     <header className="app-header">
       <div className="brand-wrap">
         <Link to="/" className="app-brand">
-          <span className="brand-mark">CT</span>
+          <img
+            src="/assets/connectroca_logo.png"
+            alt="ConnectTroca logo"
+            className="brand-logo"
+            loading="eager"
+            decoding="async"
+          />
           <span>
             <strong>ConnectTroca</strong>
             <small>{t('header.brandTagline')}</small>

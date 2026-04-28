@@ -130,6 +130,19 @@ input {
   box-shadow: 0 8px 18px rgba(255, 117, 87, 0.35);
 }
 
+.brand-logo {
+  inline-size: 2.7rem;
+  block-size: 2.7rem;
+  border-radius: 0.9rem;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, #ffffff);
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.16);
+  padding: 0.2rem;
+  flex-shrink: 0;
+}
+
+
 .app-subtitle {
   margin: 0;
   grid-column: 1 / -1;
@@ -792,6 +805,19 @@ input {
   place-items: center;
   font-size: 3rem;
 }
+
+.chatbot-logo {
+  padding: 0.5rem;
+}
+
+.chatbot-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 1rem;
+  background: #fff;
+}
+
 
 .auth-shell {
   min-height: 100vh;

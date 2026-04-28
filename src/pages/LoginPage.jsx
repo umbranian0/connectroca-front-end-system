@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 
@@ -44,7 +44,13 @@ function LoginPage() {
     <div className="auth-shell">
       <section className="auth-card figma-login-card">
         <div className="login-brand">
-          <span className="brand-mark">CT</span>
+          <img
+            src="/assets/connectroca_logo.png"
+            alt="ConnectTroca logo"
+            className="brand-logo"
+            loading="eager"
+            decoding="async"
+          />
           <div>
             <strong>ConnectTroca</strong>
             <small>Partilhe conhecimento</small>

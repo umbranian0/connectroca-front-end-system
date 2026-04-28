@@ -2,6 +2,8 @@
 
 This frontend is implemented with React + Vite and consumes the Strapi backend API.
 
+Student quick guide: `STUDENT_GUIDE.md`
+
 ## Main pages
 
 - Dashboard: `/`
@@ -202,6 +204,7 @@ If page is empty or login fails:
 docker compose down
 docker compose up --build -d
 ```
+
 
 
 
