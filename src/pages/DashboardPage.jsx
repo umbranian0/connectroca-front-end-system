@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   fetchGroups,
@@ -74,13 +74,18 @@ function DashboardPage() {
   }, [loadDashboard]);
 
   const activeProfile = useMemo(() => {
+    const loggedUserId = getEntityId(user);
     const currentUserProfile = profiles.find((profile) => {
       const profileUser = getRelationOne(profile, 'user');
-      return getEntityId(profileUser) === user?.id;
+      return getEntityId(profileUser) === loggedUserId;
     });
 
-    return currentUserProfile ?? profiles[0] ?? fallbackProfile;
-  }, [fallbackProfile, profiles, user?.id]);
+    if (loggedUserId) {
+      return currentUserProfile ?? fallbackProfile;
+    }
+
+    return profiles[0] ?? fallbackProfile;
+  }, [fallbackProfile, profiles, user]);
 
   const level = Math.max(toNumber(activeProfile?.level, 5), 1);
   const points = Math.max(toNumber(activeProfile?.points, 240), 0);
@@ -246,3 +251,4 @@ function DashboardPage() {
 }
 
 export default DashboardPage;
+

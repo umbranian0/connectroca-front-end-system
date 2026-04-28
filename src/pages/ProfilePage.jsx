@@ -13,6 +13,7 @@ import { updateUser } from '../api/usersApi';
 import {
   formatDateTime,
   getAreaLabel,
+  getEntityId,
   getRelationOne,
   getUserDisplayName,
   toNumber,
@@ -78,13 +79,14 @@ function ProfilePage() {
   }, [loadProfile]);
 
   const profile = useMemo(() => {
+    const loggedUserId = getEntityId(user);
     const byUser = profiles.find((entry) => {
       const relationUser = getRelationOne(entry, 'user');
-      return relationUser?.id === user?.id;
+      return getEntityId(relationUser) === loggedUserId;
     });
 
-    return byUser ?? profiles[0] ?? null;
-  }, [profiles, user?.id]);
+    return byUser ?? null;
+  }, [profiles, user]);
 
   const profileUser = getRelationOne(profile, 'user');
   const managedUser = user ?? profileUser ?? null;
@@ -111,14 +113,14 @@ function ProfilePage() {
   const points = toNumber(profile?.points, 240);
 
   const authoredTopics = useMemo(() => {
-    const authorId = profileUser?.id ?? managedUser?.id;
-    return topics.filter((topic) => getRelationOne(topic, 'creator')?.id === authorId);
-  }, [managedUser?.id, profileUser?.id, topics]);
+    const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
+    return topics.filter((topic) => getEntityId(getRelationOne(topic, 'creator')) === authorId);
+  }, [managedUser, profileUser, topics]);
 
   const authoredMaterials = useMemo(() => {
-    const authorId = profileUser?.id ?? managedUser?.id;
-    return materials.filter((material) => getRelationOne(material, 'author')?.id === authorId);
-  }, [materials, managedUser?.id, profileUser?.id]);
+    const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
+    return materials.filter((material) => getEntityId(getRelationOne(material, 'author')) === authorId);
+  }, [materials, managedUser, profileUser]);
 
   const interests = useMemo(() => {
     const listedInterests = Array.isArray(profile?.interests) ? profile.interests : [];
@@ -128,14 +130,18 @@ function ProfilePage() {
     }
 
     return userAreas
-      .filter((entry) => getRelationOne(entry, 'user')?.id === (profileUser?.id ?? managedUser?.id))
+      .filter(
+        (entry) =>
+          getEntityId(getRelationOne(entry, 'user')) ===
+          (getEntityId(profileUser) ?? getEntityId(managedUser)),
+      )
       .map((entry) => {
         const area = getRelationOne(entry, 'area');
         return getAreaLabel(area);
       })
       .filter(Boolean)
       .slice(0, 6);
-  }, [managedUser?.id, profile?.interests, profileUser?.id, userAreas]);
+  }, [managedUser, profile?.interests, profileUser, userAreas]);
 
   const badges =
     Array.isArray(profile?.badges) && profile.badges.length > 0 ? profile.badges : FALLBACK_BADGES;
@@ -450,3 +456,4 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
+
