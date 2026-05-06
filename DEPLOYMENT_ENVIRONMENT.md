@@ -41,6 +41,10 @@ Set these in Vercel Project Settings -> Environment Variables for both `Producti
 - Local frontend -> develop backend: use `.env.develop.example`
 - Deployed Vercel frontend: use `.env.vercel.example`
 
+## Student local runtime
+
+Students must run the frontend through Docker (`docker compose up --build -d`) and not through host `npm run dev`.
+
 ## Resolution order in code
 
 1. `VITE_STRAPI_URL`

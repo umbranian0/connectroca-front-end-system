@@ -1,60 +1,62 @@
-# ConnectTroca Frontend - Student Guide
+# ConnectTroca Frontend - Student Guide (Docker Required)
 
 ## Objective
 
-Run the frontend in a reproducible way and switch backend target with one variable.
+Run the frontend reproducibly using Docker and switch backend target with a single variable.
 
 ## 1. First run on a new computer
 
 ```powershell
 cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\frontend_conectra"
 Copy-Item .env.example .env
-npm ci
+docker compose up --build -d
 ```
 
-## 2. Start frontend (localhost)
+Open:
 
-```powershell
-npm run dev
-```
+- `http://localhost:5173`
 
-Open: `http://localhost:5173`
-
-## 3. Switch backend target (single change)
+## 2. Switch backend target (single change)
 
 Edit `.env`:
 
-- `VITE_BACKEND_TARGET=local` -> frontend localhost + backend localhost
-- `VITE_BACKEND_TARGET=development` -> frontend localhost + backend Heroku development
+- `VITE_BACKEND_TARGET=local` -> frontend localhost (Docker) + backend localhost Strapi
+- `VITE_BACKEND_TARGET=development` -> frontend localhost (Docker) + backend Heroku development Strapi
 
-Keep this empty unless you need a hard override:
+Keep this empty unless you need hard override:
 
 - `VITE_STRAPI_URL=`
 
-Restart `npm run dev` after changing `.env`.
+After changing `.env`, restart:
 
-## 4. Required backend URLs
+```powershell
+docker compose up --build -d
+```
+
+## 3. Required backend URLs
 
 - Local backend: `http://localhost:1337`
 - Development backend (Heroku):
   `https://connectra-backend-system-f4a977a741b9.herokuapp.com`
 
-## 5. Quick validation
+## 4. Quick validation
 
-1. Open `/login`.
-2. Check header API base URL.
-3. Login and open dashboard/forum/materials.
-
-## 6. Build check (must pass)
+1. Check container status:
 
 ```powershell
-npm run build
+docker compose ps
 ```
 
-## 7. Docker mode (optional)
+2. Open `/login`.
+3. Verify header API base URL.
+4. Login and open dashboard/forum/materials.
+
+## 5. Daily commands
+
+Logs:
 
 ```powershell
-docker compose up --build -d
+docker compose logs -f frontend
 ```
 
 Stop:
@@ -63,13 +65,19 @@ Stop:
 docker compose down
 ```
 
-## 8. Common issues
+Rebuild/start:
 
-- API errors: verify `VITE_BACKEND_TARGET` and `VITE_STRAPI_URL`.
-- 404 on deployed routes: verify `vercel.json` rewrite to `/index.html`.
+```powershell
+docker compose up --build -d
+```
+
+## 6. Common issues
+
+- API errors: check `VITE_BACKEND_TARGET` and `VITE_STRAPI_URL`.
 - Auth failures: check Strapi permissions for Users/Auth routes.
+- 404 on deployed routes: verify `vercel.json` rewrite to `/index.html`.
 
-## 9. Where configuration lives
+## 7. Config location
 
 - Runtime resolution logic: `src/config/runtimeConfig.js`
 - Deployment env checklist: `DEPLOYMENT_ENVIRONMENT.md`
