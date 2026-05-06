@@ -1,170 +1,90 @@
-# ConnectTroca Frontend - Local + Vercel Deployment Guide
+# ConnectTroca Frontend - Reproducible Setup Guide
 
-This frontend is implemented with React + Vite and consumes the Strapi backend API.
+This frontend runs with React + Vite and connects to Strapi.
 
-Student quick guide: `STUDENT_GUIDE.md`
+Student-first documentation:
 
-## Main pages
+- Main setup and workflow: `README.md` (this file)
+- Student quick workflow: `STUDENT_GUIDE.md`
+- Vercel environment checklist: `DEPLOYMENT_ENVIRONMENT.md`
 
-- Dashboard: `/`
-- Forum: `/forum`
-- Topic detail: `/forum/topic/:topicId`
-- Materials: `/materials`
-- Groups: `/groups`
-- Group chat: `/groups/:groupId/chat`
-- Group members: `/groups/:groupId/members`
-- Chatbot screen: `/chatbot`
-- Profile: `/profile`
-- Login: `/login`
+## 1. Project scope
 
-## Files you should know
+Frontend repository path:
 
-- `DEPLOYMENT_ENVIRONMENT.md` -> complete Vercel environment checklist
+- `frontend_conectra`
 
-- `.env.example` -> local development template
-- `.env.vercel.example` -> Vercel environment template
-- `.env.develop.example` -> local frontend to develop backend template
-- `.env.production.example` -> production variable template
-- `vercel.json` -> Vercel build/output + SPA route fallback
+Main runtime behavior is centralized in:
 
-## Runtime modes
+- `src/config/runtimeConfig.js`
 
-Use these values to switch behavior without code changes:
+You only switch one variable to change backend target:
 
-1. Full local (`frontend local` + `backend local`):
-   - `VITE_RUNTIME_MODE=local`
-   - `VITE_STRAPI_URL=` (empty)
-2. Full develop (`frontend deploy` + `backend Heroku`):
-   - `VITE_RUNTIME_MODE=develop`
-   - `VITE_STRAPI_URL=https://connectra-backend-system-f4a977a741b9.herokuapp.com`
-3. Cross (`frontend local` -> `backend Heroku`):
-   - Copy `.env.develop.example` to `.env`, or set `VITE_RUNTIME_MODE=develop` manually
+- `VITE_BACKEND_TARGET=local` (frontend localhost + backend localhost)
+- `VITE_BACKEND_TARGET=development` (frontend localhost/Vercel + backend Heroku development)
 
-Priority order in code:
+## 2. Prerequisites
 
-1. `VITE_STRAPI_URL` (explicit override)
-2. `VITE_RUNTIME_MODE` (`local` or `develop`)
-3. Hostname fallback (`localhost` => local backend, other domains => Heroku backend)
+Required:
 
-## Local Docker setup (recommended for students)
+- Node.js 20.x (or later compatible with `package.json` engines)
+- npm 10.x
 
-### 1. Open frontend folder
+Optional (recommended for containerized run):
+
+- Docker Desktop
+
+Backend prerequisites:
+
+- Local Strapi available at `http://localhost:1337` for local mode
+- Heroku development Strapi available at:
+  `https://connectra-backend-system-f4a977a741b9.herokuapp.com`
+
+## 3. First-time setup (same for every student)
 
 ```powershell
 cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\frontend_conectra"
+Copy-Item .env.example .env
+npm ci
 ```
 
-### 2. Configure environment (first run only)
+## 4. Run locally (frontend localhost + backend localhost)
+
+1. Ensure `.env` contains:
+   - `VITE_BACKEND_TARGET=local`
+   - `VITE_STRAPI_URL=` (empty)
+2. Start frontend:
 
 ```powershell
-Copy-Item .env.example .env
+npm run dev
 ```
 
-Most important variables:
+3. Open:
+   - `http://localhost:5173`
 
-- `VITE_RUNTIME_MODE=local`
-- `VITE_STRAPI_URL=` (empty to use mode defaults)
+## 5. Run locally with Heroku development backend
 
-### 3. Start frontend container
+1. Change only one line in `.env`:
+   - `VITE_BACKEND_TARGET=development`
+2. Keep:
+   - `VITE_STRAPI_URL=` (empty)
+3. Restart frontend:
+
+```powershell
+npm run dev
+```
+
+This mode keeps frontend on localhost and points API calls to Heroku development Strapi.
+
+## 6. Docker workflow (optional)
 
 ```powershell
 docker compose up --build -d
 ```
 
-### 4. Open application
+Open:
 
-- URL: `http://localhost:5173`
-
-### 5. Login with demo user
-
-- Email: `integration.user@example.com`
-- Password: `Integration123!`
-
-## Vercel deployment (production + preview)
-
-### 1. Backend requirement (must be online first)
-
-Before deploying frontend to Vercel, your Strapi backend must be deployed on a public HTTPS URL, for example:
-
-- `https://connectra-backend-system-f4a977a741b9.herokuapp.com`
-
-### 2. Create Vercel project
-
-In Vercel:
-
-1. Import repository.
-2. Set **Root Directory** to `frontend_conectra`.
-3. Build command: `npm run build`.
-4. Output directory: `dist`.
-
-(`vercel.json` already defines these values.)
-
-### 3. Add environment variables in Vercel
-
-From `.env.vercel.example`, add these variables in Vercel Project Settings -> Environment Variables:
-
-- `VITE_RUNTIME_MODE` (`develop` for Vercel deployments)
-- `VITE_STRAPI_URL` (set to `https://connectra-backend-system-f4a977a741b9.herokuapp.com`)
-- `VITE_STRAPI_AUTH_ENDPOINT`
-- `VITE_STRAPI_USERS_ENDPOINT`
-- `VITE_STRAPI_PROFILES_ENDPOINT`
-- `VITE_STRAPI_AREAS_ENDPOINT`
-- `VITE_STRAPI_GROUPS_ENDPOINT`
-- `VITE_STRAPI_GROUP_MEMBERS_ENDPOINT`
-- `VITE_STRAPI_USER_AREAS_ENDPOINT`
-- `VITE_STRAPI_MATERIALS_ENDPOINT`
-- `VITE_STRAPI_TOPICS_ENDPOINT`
-- `VITE_STRAPI_POSTS_ENDPOINT`
-- `VITE_STRAPI_COMMENTS_ENDPOINT`
-- `VITE_STRAPI_LIKES_ENDPOINT`
-- `VITE_STRAPI_ACTIVITIES_ENDPOINT`
-
-Set them for:
-
-- Production
-- Preview
-
-### 4. Trigger deployment
-
-After env variables are saved, redeploy from Vercel dashboard.
-
-### 5. Validate on deployed URL
-
-1. Open Vercel URL.
-2. Login with seeded/demo user.
-3. Confirm dashboard/forum/materials are populated.
-
-## Language support
-
-The UI supports:
-
-- Portuguese (`PT`)
-- English (`EN`)
-
-Use the header language switch.
-
-## Backend endpoints consumed by frontend
-
-- `/api/profiles`
-- `/api/areas`
-- `/api/groups`
-- `/api/group-members`
-- `/api/user-areas`
-- `/api/materials`
-- `/api/topics`
-- `/api/posts`
-- `/api/comments`
-- `/api/likes`
-
-The frontend requests `populate=*` automatically.
-
-## Daily commands
-
-Start:
-
-```powershell
-docker compose up -d
-```
+- `http://localhost:5173`
 
 Stop:
 
@@ -178,33 +98,43 @@ Logs:
 docker compose logs -f frontend
 ```
 
-## Optional host-machine mode
+## 7. Frontend deployment on Vercel (development backend)
 
-```powershell
-npm install
-npm run dev
-```
+Use `.env.vercel.example` as template in Vercel Project Settings -> Environment Variables.
 
-Build production bundle:
+Minimum required deployment values:
 
-```powershell
-npm run build
-```
+- `VITE_BACKEND_TARGET=development`
+- `VITE_STRAPI_URL_DEVELOPMENT=https://connectra-backend-system-f4a977a741b9.herokuapp.com`
+- `VITE_STRAPI_URL=` (empty, unless explicit override is needed)
 
-## Troubleshooting
+Build/output:
 
-If page is empty or login fails:
+- Build command: `npm run build`
+- Output directory: `dist`
 
-1. Check backend health (`http://localhost:1337/api/health` locally).
-2. Confirm `VITE_STRAPI_URL` or `VITE_RUNTIME_MODE` points to the intended backend.
-3. Confirm backend CORS includes your frontend origin.
-4. Rebuild frontend container:
+## 8. Reproducibility checklist
 
-```powershell
-docker compose down
-docker compose up --build -d
-```
+After setup, every student should verify:
 
+1. `npm ci` completes without errors.
+2. `npm run build` succeeds.
+3. Login page loads at `/login`.
+4. API base shown in header matches expected target (`localhost:1337` or Heroku URL).
+5. Dashboard/forum/materials render data when backend permissions are correct.
 
+## 9. Troubleshooting
 
+- If API calls fail, check `.env` values:
+  - `VITE_BACKEND_TARGET`
+  - `VITE_STRAPI_URL` (should usually be empty)
+- If routes fail in deploy, verify `vercel.json` SPA rewrite to `/index.html`.
+- If auth fails, validate Strapi permissions for auth/users routes.
+- If stale config persists, stop dev server and run again.
 
+## 10. Related files
+
+- Runtime config: `src/config/runtimeConfig.js`
+- Local env template: `.env.example`
+- Local -> Heroku dev template: `.env.develop.example`
+- Vercel template: `.env.vercel.example`

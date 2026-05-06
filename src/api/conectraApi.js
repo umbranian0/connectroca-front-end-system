@@ -1,17 +1,18 @@
 import { request } from './httpClient';
 import { normalizeStrapiCollection, normalizeStrapiSingle } from '../utils/strapi';
+import { runtimeConfig } from '../config/runtimeConfig';
 
 const ENDPOINTS = {
-  profiles: import.meta.env.VITE_STRAPI_PROFILES_ENDPOINT ?? '/api/profiles',
-  areas: import.meta.env.VITE_STRAPI_AREAS_ENDPOINT ?? '/api/areas',
-  groups: import.meta.env.VITE_STRAPI_GROUPS_ENDPOINT ?? '/api/groups',
-  groupMembers: import.meta.env.VITE_STRAPI_GROUP_MEMBERS_ENDPOINT ?? '/api/group-members',
-  userAreas: import.meta.env.VITE_STRAPI_USER_AREAS_ENDPOINT ?? '/api/user-areas',
-  materials: import.meta.env.VITE_STRAPI_MATERIALS_ENDPOINT ?? '/api/materials',
-  topics: import.meta.env.VITE_STRAPI_TOPICS_ENDPOINT ?? '/api/topics',
-  posts: import.meta.env.VITE_STRAPI_POSTS_ENDPOINT ?? '/api/posts',
-  comments: import.meta.env.VITE_STRAPI_COMMENTS_ENDPOINT ?? '/api/comments',
-  likes: import.meta.env.VITE_STRAPI_LIKES_ENDPOINT ?? '/api/likes',
+  profiles: runtimeConfig.endpoints.profiles,
+  areas: runtimeConfig.endpoints.areas,
+  groups: runtimeConfig.endpoints.groups,
+  groupMembers: runtimeConfig.endpoints.groupMembers,
+  userAreas: runtimeConfig.endpoints.userAreas,
+  materials: runtimeConfig.endpoints.materials,
+  topics: runtimeConfig.endpoints.topics,
+  posts: runtimeConfig.endpoints.posts,
+  comments: runtimeConfig.endpoints.comments,
+  likes: runtimeConfig.endpoints.likes,
 };
 
 function withPopulate(endpoint) {

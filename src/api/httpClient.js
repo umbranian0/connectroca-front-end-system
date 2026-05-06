@@ -1,66 +1,7 @@
-const LOCAL_STRAPI_URL = 'http://localhost:1337';
-const DEVELOP_STRAPI_URL = 'https://connectra-backend-system-f4a977a741b9.herokuapp.com';
-
-function getBrowserModeFallback() {
-  if (typeof window === 'undefined') {
-    return 'local';
-  }
-
-  return ['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'local' : 'develop';
-}
-
-function resolveConfiguredMode() {
-  const mode = (import.meta.env.VITE_RUNTIME_MODE ?? '').toString().trim().toLowerCase();
-
-  if (mode === 'local' || mode === 'develop') {
-    return mode;
-  }
-
-  return getBrowserModeFallback();
-}
-
-function resolveDefaultStrapiUrl(mode) {
-  const localUrl = (import.meta.env.VITE_STRAPI_URL_LOCAL ?? LOCAL_STRAPI_URL).toString().trim();
-  const developUrl = (import.meta.env.VITE_STRAPI_URL_DEVELOP ?? DEVELOP_STRAPI_URL)
-    .toString()
-    .trim();
-
-  if (mode === 'develop') {
-    return developUrl || DEVELOP_STRAPI_URL;
-  }
-
-  return localUrl || LOCAL_STRAPI_URL;
-}
-
-function normalizeBrowserBaseUrl(rawBaseUrl) {
-  const configuredBaseUrl = typeof rawBaseUrl === 'string' ? rawBaseUrl.trim() : '';
-  const runtimeMode = resolveConfiguredMode();
-  const baseUrl = (configuredBaseUrl || resolveDefaultStrapiUrl(runtimeMode)).replace(/\/$/, '');
-
-  if (typeof window === 'undefined') {
-    return baseUrl;
-  }
-
-  let parsedUrl;
-  try {
-    parsedUrl = new URL(baseUrl);
-  } catch {
-    return baseUrl;
-  }
-
-  const isLocalBrowser = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  const usesDockerHostAlias = parsedUrl.hostname === 'host.docker.internal';
-
-  if (isLocalBrowser && usesDockerHostAlias) {
-    parsedUrl.hostname = 'localhost';
-    return parsedUrl.toString().replace(/\/$/, '');
-  }
-
-  return baseUrl;
-}
+import { getStrapiBaseUrlFromConfig } from '../config/runtimeConfig';
 
 export function getStrapiBaseUrl() {
-  return normalizeBrowserBaseUrl(import.meta.env.VITE_STRAPI_URL);
+  return getStrapiBaseUrlFromConfig();
 }
 
 function buildUrl(path) {
