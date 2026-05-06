@@ -1,9 +1,10 @@
 import { registerUserAccount } from './authApi';
 import { request } from './httpClient';
 import { normalizeStrapiSingle } from '../utils/strapi';
+import { runtimeConfig } from '../config/runtimeConfig';
 
-const POSTS_ENDPOINT = import.meta.env.VITE_STRAPI_POSTS_ENDPOINT ?? '/api/posts';
-const GROUPS_ENDPOINT = import.meta.env.VITE_STRAPI_GROUPS_ENDPOINT ?? '/api/groups';
+const POSTS_ENDPOINT = runtimeConfig.endpoints.posts;
+const GROUPS_ENDPOINT = runtimeConfig.endpoints.groups;
 
 function toOptionalInteger(value) {
   const parsed = Number.parseInt(String(value ?? '').trim(), 10);

@@ -1,4 +1,5 @@
 import { getStrapiBaseUrl, request } from './httpClient';
+import { runtimeConfig } from '../config/runtimeConfig';
 
 const LOCAL_LOGO_PATH = '/assets/connectroca_logo.png';
 const DEFAULT_LOGO_NAME = 'connectroca_logo';
@@ -56,7 +57,7 @@ function toArray(payload) {
 }
 
 function getLogoNameHint() {
-  const configuredName = (import.meta.env.VITE_STRAPI_LOGO_NAME ?? DEFAULT_LOGO_NAME).toString().trim();
+  const configuredName = runtimeConfig.branding.logoName.toString().trim();
   return configuredName || DEFAULT_LOGO_NAME;
 }
 
@@ -121,12 +122,12 @@ async function findLogoByClientSideScan(logoNameHint) {
 }
 
 async function resolveLogoFromStrapi() {
-  const directLogoUrl = normalizeMediaUrl(import.meta.env.VITE_STRAPI_LOGO_URL);
+  const directLogoUrl = normalizeMediaUrl(runtimeConfig.branding.logoUrl);
   if (directLogoUrl) {
     return directLogoUrl;
   }
 
-  const fileId = (import.meta.env.VITE_STRAPI_LOGO_ID ?? '').toString().trim();
+  const fileId = runtimeConfig.branding.logoId.toString().trim();
   if (fileId) {
     const byIdUrl = await findLogoById(fileId);
     if (byIdUrl) {

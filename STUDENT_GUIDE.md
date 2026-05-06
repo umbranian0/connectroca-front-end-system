@@ -1,64 +1,76 @@
-﻿# ConnectTroca Frontend - Student Guide
+# ConnectTroca Frontend - Student Guide
 
 ## Objective
-This guide is for students who need to run, test, and customize the frontend safely.
 
-## 1) Start the frontend
+Run the frontend in a reproducible way and switch backend target with one variable.
+
+## 1. First run on a new computer
 
 ```powershell
 cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\frontend_conectra"
-Copy-Item .env.example .env   # first run only
-docker compose up --build -d
+Copy-Item .env.example .env
+npm ci
+```
+
+## 2. Start frontend (localhost)
+
+```powershell
+npm run dev
 ```
 
 Open: `http://localhost:5173`
 
-## 2) Authentication pages
+## 3. Switch backend target (single change)
 
-- Login: `/login`
-- Register account: `/register`
-- Forgot password: `/forgot-password`
+Edit `.env`:
 
-If your backend permissions are private, login is required for protected actions.
+- `VITE_BACKEND_TARGET=local` -> frontend localhost + backend localhost
+- `VITE_BACKEND_TARGET=development` -> frontend localhost + backend Heroku development
 
-## 3) Main student pages
+Keep this empty unless you need a hard override:
 
-- Dashboard: `/`
-- Forum: `/forum`
-- Materials: `/materials`
-- Groups: `/groups`
-- Profile: `/profile`
-- Form examples: `/examples/forms`
+- `VITE_STRAPI_URL=`
 
-## 4) Logo usage (frontend branding)
+Restart `npm run dev` after changing `.env`.
 
-Current logo path:
+## 4. Required backend URLs
 
-- `public/assets/connectroca_logo.png`
+- Local backend: `http://localhost:1337`
+- Development backend (Heroku):
+  `https://connectra-backend-system-f4a977a741b9.herokuapp.com`
 
-Used in:
+## 5. Quick validation
 
-- Header brand
-- Login/Register/Forgot Password cards
-- Chatbot visual block
+1. Open `/login`.
+2. Check header API base URL.
+3. Login and open dashboard/forum/materials.
 
-To replace logo later, keep the same file name and path, or update references in:
-
-- `src/components/AppHeader.jsx`
-- `src/pages/LoginPage.jsx`
-- `src/pages/RegisterPage.jsx`
-- `src/pages/ForgotPasswordPage.jsx`
-- `src/pages/ChatbotPage.jsx`
-
-## 5) Useful commands
+## 6. Build check (must pass)
 
 ```powershell
 npm run build
-npm run dev
 ```
 
-## 6) Troubleshooting
+## 7. Docker mode (optional)
 
-- If links return 404 on deploy, check `vercel.json` rewrite to `/index.html`.
-- If backend calls fail, confirm `VITE_STRAPI_URL` / `VITE_RUNTIME_MODE`.
-- If auth endpoints fail, check Strapi permissions for Users and Auth routes.
+```powershell
+docker compose up --build -d
+```
+
+Stop:
+
+```powershell
+docker compose down
+```
+
+## 8. Common issues
+
+- API errors: verify `VITE_BACKEND_TARGET` and `VITE_STRAPI_URL`.
+- 404 on deployed routes: verify `vercel.json` rewrite to `/index.html`.
+- Auth failures: check Strapi permissions for Users/Auth routes.
+
+## 9. Where configuration lives
+
+- Runtime resolution logic: `src/config/runtimeConfig.js`
+- Deployment env checklist: `DEPLOYMENT_ENVIRONMENT.md`
+- Vercel template: `.env.vercel.example`

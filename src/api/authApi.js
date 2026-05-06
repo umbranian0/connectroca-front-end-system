@@ -1,10 +1,10 @@
 import { request } from './httpClient';
+import { runtimeConfig } from '../config/runtimeConfig';
 
-const AUTH_ENDPOINT = import.meta.env.VITE_STRAPI_AUTH_ENDPOINT ?? '/api/auth/local';
-const REGISTER_ENDPOINT = import.meta.env.VITE_STRAPI_REGISTER_ENDPOINT ?? '/api/auth/local/register';
-const USERS_ENDPOINT = import.meta.env.VITE_STRAPI_USERS_ENDPOINT ?? '/api/users';
-const FORGOT_PASSWORD_ENDPOINT =
-  import.meta.env.VITE_STRAPI_FORGOT_PASSWORD_ENDPOINT ?? '/api/auth/forgot-password';
+const AUTH_ENDPOINT = runtimeConfig.endpoints.auth;
+const REGISTER_ENDPOINT = runtimeConfig.endpoints.register;
+const USERS_ENDPOINT = runtimeConfig.endpoints.users;
+const FORGOT_PASSWORD_ENDPOINT = runtimeConfig.endpoints.forgotPassword;
 
 function normalizeCredentials(credentials) {
   return {
