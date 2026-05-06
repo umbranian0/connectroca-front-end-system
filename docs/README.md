@@ -1,6 +1,14 @@
 # Strapi contributor documentation
 
 > [!NOTE]
+> Student setup for this project is documented in:
+> - `../README.md`
+> - `../STUDENT_GUIDE.md`
+> - `../DEPLOYMENT_ENVIRONMENT.md`
+>
+> Use those files for reproducible local/Vercel frontend execution.
+
+> [!NOTE]
 > If you are looking for the official Strapi documentation, it is available [here](https://docs.strapi.io)
 
 This documentation is a contributor documentation made for anyone that wants to contribute to the project.

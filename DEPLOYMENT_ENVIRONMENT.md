@@ -8,9 +8,13 @@ Set these in Vercel Project Settings -> Environment Variables for both `Producti
 
 | Variable | Required | Example | Notes |
 |---|---|---|---|
-| `VITE_RUNTIME_MODE` | Yes | `develop` | Use `develop` for deployed frontend. |
-| `VITE_STRAPI_URL` | Yes | `https://connectra-backend-system-f4a977a741b9.herokuapp.com` | Base URL for backend API. |
+| `VITE_BACKEND_TARGET` | Yes | `development` | Main switch for backend resolution in deployed frontend. |
+| `VITE_STRAPI_URL_DEVELOPMENT` | Yes | `https://connectra-backend-system-f4a977a741b9.herokuapp.com` | Heroku development Strapi base URL. |
+| `VITE_RUNTIME_MODE` | No | `develop` | Legacy compatibility alias. |
+| `VITE_STRAPI_URL` | No | `https://connectra-backend-system-f4a977a741b9.herokuapp.com` | Optional explicit override of backend API URL. |
 | `VITE_STRAPI_AUTH_ENDPOINT` | Yes | `/api/auth/local` | Auth endpoint path. |
+| `VITE_STRAPI_REGISTER_ENDPOINT` | Yes | `/api/auth/local/register` | Register endpoint path. |
+| `VITE_STRAPI_FORGOT_PASSWORD_ENDPOINT` | Yes | `/api/auth/forgot-password` | Forgot-password endpoint path. |
 | `VITE_STRAPI_USERS_ENDPOINT` | Yes | `/api/users` | Users endpoint path. |
 | `VITE_STRAPI_PROFILES_ENDPOINT` | Yes | `/api/profiles` | Collection endpoint path. |
 | `VITE_STRAPI_AREAS_ENDPOINT` | Yes | `/api/areas` | Collection endpoint path. |
@@ -29,19 +33,20 @@ Set these in Vercel Project Settings -> Environment Variables for both `Producti
 | Variable | Required | Example | Notes |
 |---|---|---|---|
 | `VITE_STRAPI_URL_LOCAL` | No | `http://localhost:1337` | Used when running frontend locally in `local` mode. |
-| `VITE_STRAPI_URL_DEVELOP` | No | `https://connectra-backend-system-f4a977a741b9.herokuapp.com` | Develop fallback URL. |
+| `VITE_STRAPI_URL_DEVELOP` | No | `https://connectra-backend-system-f4a977a741b9.herokuapp.com` | Legacy alias for development URL. |
 
 ## Local profiles
 
 - Full local: use `.env.example`
 - Local frontend -> develop backend: use `.env.develop.example`
-- Deployed Vercel frontend: use `.env.vercel.example` / `.env.production.example`
+- Deployed Vercel frontend: use `.env.vercel.example`
 
 ## Resolution order in code
 
 1. `VITE_STRAPI_URL`
-2. `VITE_RUNTIME_MODE` (`local` or `develop`)
-3. Hostname fallback (`localhost` => local backend; non-localhost => develop backend)
+2. `VITE_BACKEND_TARGET` (`local` or `development`)
+3. `VITE_RUNTIME_MODE` (`local` or `develop`, legacy compatibility)
+4. Hostname fallback (`localhost` => local backend; non-localhost => develop backend)
 
 ## GitHub Actions prerequisites (frontend repo)
 
