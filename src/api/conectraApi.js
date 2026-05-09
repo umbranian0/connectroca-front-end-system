@@ -79,6 +79,23 @@ export function fetchLikes(token) {
   return fetchCollection(ENDPOINTS.likes, token);
 }
 
+// --- NOVA FUNÇÃO ADICIONADA AQUI ---
+export async function joinGroup(token, userId, groupId) {
+  const payload = await request(ENDPOINTS.groupMembers, {
+    method: 'POST',
+    token,
+    body: {
+      data: {
+        user: userId,
+        group: groupId,
+      },
+    },
+  });
+
+  return normalizeStrapiSingle(payload);
+}
+// -----------------------------------
+
 export async function createProfile(profileData, token) {
   const payload = await request(ENDPOINTS.profiles, {
     method: 'POST',
