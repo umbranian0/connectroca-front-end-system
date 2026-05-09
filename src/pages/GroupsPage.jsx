@@ -45,9 +45,11 @@ function GroupsPage() {
   // --- NOVA FUNÇÃO QUE RESOLVE O PROBLEMA ---
   const handleJoinClick = async (groupId) => {
     try {
-      await joinGroup(token, user.id, groupId);
+      // Usamos o Number() para garantir que o ID vai como número e não como texto
+      await joinGroup(token, Number(user.id), Number(groupId));
+      
       alert("Boa! Agora fazes parte deste grupo.");
-      loadGroups(); // Atualiza a lista para o botão mudar para "Já é membro"
+      loadGroups(); 
     } catch (err) {
       alert("Ops! Algo correu mal ao tentar entrar no grupo.");
     }
