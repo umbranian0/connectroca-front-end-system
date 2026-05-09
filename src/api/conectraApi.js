@@ -19,18 +19,15 @@ function withPopulate(endpoint) {
   if (endpoint.includes('populate=')) {
     return endpoint;
   }
-
   const join = endpoint.includes('?') ? '&' : '?';
   return `${endpoint}${join}populate=*`;
 }
 
 function withEntityId(endpoint, id) {
   const [basePath, queryString] = endpoint.split('?');
-
   if (!queryString) {
     return `${basePath}/${id}`;
   }
-
   return `${basePath}/${id}?${queryString}`;
 }
 
@@ -79,22 +76,20 @@ export function fetchLikes(token) {
   return fetchCollection(ENDPOINTS.likes, token);
 }
 
-// --- NOVA FUNÇÃO ADICIONADA AQUI ---
 export async function joinGroup(token, userId, groupId) {
   const payload = await request(ENDPOINTS.groupMembers, {
     method: 'POST',
     token,
     body: {
       data: {
-        user: userId,
-        group: groupId,
+        user: Number(userId),
+        group: Number(groupId),
       },
     },
   });
 
   return normalizeStrapiSingle(payload);
 }
-// -----------------------------------
 
 export async function createProfile(profileData, token) {
   const payload = await request(ENDPOINTS.profiles, {
