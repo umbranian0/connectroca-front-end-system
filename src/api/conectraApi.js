@@ -82,6 +82,7 @@ export async function joinGroup(token, userId, groupId) {
     token,
     body: {
       data: {
+        user: Number(userId),
         users_permissions_user: Number(userId),
         group: Number(groupId),
       },
