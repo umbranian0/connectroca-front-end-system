@@ -15,6 +15,27 @@ const ENDPOINTS = {
   likes: runtimeConfig.endpoints.likes,
 };
 
+const SOFT_FAIL_ENDPOINTS = new Set([
+  runtimeConfig.endpoints.profiles.split('?')[0],
+  runtimeConfig.endpoints.userAreas.split('?')[0],
+]);
+
+function getBaseEndpoint(endpoint) {
+  return String(endpoint ?? '').split('?')[0];
+}
+
+function isInvalidUserFilterError(error) {
+  const errorStatus = error?.status ?? null;
+  const message = error?.payload?.error?.message ?? error?.message ?? '';
+  const key = error?.payload?.error?.details?.key ?? null;
+
+  return errorStatus === 400 && key === 'user' && String(message).includes('Invalid key user');
+}
+
+function shouldSoftFail(endpoint, error) {
+  return SOFT_FAIL_ENDPOINTS.has(getBaseEndpoint(endpoint)) && isInvalidUserFilterError(error);
+}
+
 function withPopulate(endpoint) {
   if (endpoint.includes('populate=')) {
     return endpoint;
@@ -35,8 +56,16 @@ function withEntityId(endpoint, id) {
 }
 
 async function fetchCollection(endpoint, token) {
-  const payload = await request(withPopulate(endpoint), { token });
-  return normalizeStrapiCollection(payload);
+  try {
+    const payload = await request(withPopulate(endpoint), { token });
+    return normalizeStrapiCollection(payload);
+  } catch (error) {
+    if (shouldSoftFail(endpoint, error)) {
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 export function fetchProfiles(token) {

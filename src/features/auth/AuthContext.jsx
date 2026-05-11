@@ -1,7 +1,6 @@
-﻿import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchCurrentUser, loginWithLocalCredentials } from '../../api/authApi';
-
-const STORAGE_KEY = 'conectra_auth_token';
+import { AUTH_EXPIRED_EVENT, AUTH_STORAGE_KEY } from './constants';
 
 export const AuthContext = createContext(null);
 
@@ -10,7 +9,7 @@ function getTokenFromStorage() {
     return '';
   }
 
-  return window.localStorage.getItem(STORAGE_KEY) ?? '';
+  return window.localStorage.getItem(AUTH_STORAGE_KEY) ?? '';
 }
 
 function persistToken(nextToken) {
@@ -19,11 +18,11 @@ function persistToken(nextToken) {
   }
 
   if (!nextToken) {
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
     return;
   }
 
-  window.localStorage.setItem(STORAGE_KEY, nextToken);
+  window.localStorage.setItem(AUTH_STORAGE_KEY, nextToken);
 }
 
 export function AuthProvider({ children }) {
@@ -31,6 +30,25 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleAuthExpired = () => {
+      setToken('');
+      setUser(null);
+      setError('Session expired. Please log in again.');
+      persistToken('');
+      setIsLoading(false);
+    };
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -130,3 +148,4 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
