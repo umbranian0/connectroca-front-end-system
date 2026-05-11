@@ -291,13 +291,13 @@ function FormExamplesPage() {
       </p>
 
       {!isAuthenticated ? (
-        <p className="status-message">Log in first if your Strapi permissions require authentication for creating users, posts and groups.</p>
+        <p className="status-message">Log in first if your Strapi permissions require authentication for creating posts and groups.</p>
       ) : null}
 
       <div className="forms-grid">
         <article className="form-card">
           <h2>Create Account</h2>
-          <p className="form-intro">Calls `POST /api/users`.</p>
+          <p className="form-intro">Calls `POST /api/auth/local/register` (with token fallback when needed).</p>
 
           <form className="example-form" onSubmit={handleAccountSubmit} noValidate>
             <FormField id="account-username" label="Username" error={accountErrors.username}>
@@ -525,3 +525,4 @@ function FormExamplesPage() {
 }
 
 export default FormExamplesPage;
+

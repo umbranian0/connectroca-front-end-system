@@ -1,6 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchGroupMembers, fetchGroups } from '../api/conectraApi';
+import { fetchGroupMembers, fetchGroups, joinGroup } from '../api/conectraApi'; // Adicionei o joinGroup aqui
 import { useAuth } from '../features/auth/useAuth';
 import { useI18n } from '../features/i18n/useI18n';
 import {
@@ -19,16 +19,15 @@ function GroupsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Carrega os dados da API
   const loadGroups = useCallback(async () => {
     setIsLoading(true);
     setError('');
-
     try {
       const [nextGroups, nextMemberships] = await Promise.all([
         fetchGroups(token),
         fetchGroupMembers(token),
       ]);
-
       setGroups(nextGroups);
       setMemberships(nextMemberships);
     } catch (requestError) {
@@ -43,37 +42,40 @@ function GroupsPage() {
     void loadGroups();
   }, [loadGroups]);
 
+  // --- NOVA FUNÇÃO QUE RESOLVE O PROBLEMA ---
+  const handleJoinClick = async (groupId) => {
+    try {
+      await joinGroup(token, user.id, groupId);
+      alert("Boa! Agora fazes parte deste grupo.");
+      loadGroups(); // Atualiza a lista para o botão mudar para "Já é membro"
+    } catch (err) {
+      alert("Ops! Algo correu mal ao tentar entrar no grupo.");
+    }
+  };
+
+  // Mapeia quem são os membros
   const groupMembersMap = useMemo(() => {
     const map = new Map();
-
     memberships.forEach((membership) => {
       const group = getRelationOne(membership, 'group');
       const groupId = String(getEntityId(group) ?? '');
-
-      if (!groupId) {
-        return;
-      }
-
+      if (!groupId) return;
       const current = map.get(groupId) ?? [];
       current.push(membership);
       map.set(groupId, current);
     });
-
     return map;
   }, [memberships]);
 
   const memberGroupIds = useMemo(() => {
     const ids = new Set();
-
     memberships.forEach((membership) => {
       const membershipUser = getRelationOne(membership, 'user');
       const membershipGroup = getRelationOne(membership, 'group');
-
       if (membershipUser?.id === user?.id) {
         ids.add(String(getEntityId(membershipGroup) ?? ''));
       }
     });
-
     return ids;
   }, [memberships, user?.id]);
 
@@ -84,7 +86,6 @@ function GroupsPage() {
           <h1>{t('groups.title')}</h1>
           <p>{t('groups.subtitle')}</p>
         </div>
-
         <button type="button" className="button button-primary">
           + {t('groups.newGroup')}
         </button>
@@ -92,10 +93,6 @@ function GroupsPage() {
 
       {isLoading ? <p className="status-message">{t('groups.loading')}</p> : null}
       {error ? <p className="status-error">{error}</p> : null}
-
-      {!isLoading && !error && groups.length === 0 ? (
-        <p className="status-message">{t('groups.noGroups')}</p>
-      ) : null}
 
       {!isLoading && !error && groups.length > 0 ? (
         <ul className="group-card-list">
@@ -112,15 +109,31 @@ function GroupsPage() {
               <li key={groupId || group.name} className="group-card" style={{ '--card-index': index }}>
                 <div className="group-card-banner">
                   <strong>{group.name ?? t('groups.unnamedGroup')}</strong>
-                  <span>{isMember ? t('groups.alreadyMember') : t('groups.joinGroup')}</span>
+                  
+                  {/* O SEU BOTÃO AQUI */}
+                  <button 
+                    type="button"
+                    disabled={isMember}
+                    onClick={() => handleJoinClick(groupId)}
+                    style={{
+                      cursor: isMember ? 'default' : 'pointer',
+                      backgroundColor: isMember ? 'rgba(255,255,255,0.3)' : '#fff',
+                      color: isMember ? '#fff' : '#ff6b35',
+                      border: 'none',
+                      padding: '5px 12px',
+                      borderRadius: '5px',
+                      fontWeight: 'bold',
+                      fontSize: '14px'
+                    }}
+                  >
+                    {isMember ? t('groups.alreadyMember') : t('groups.joinGroup')}
+                  </button>
                 </div>
 
                 <div className="group-card-body">
                   <p>{group.description ?? t('groups.noDescription')}</p>
                   <p>{getAreaLabel(area, t('format.generalArea'))}</p>
-                  <p>
-                    {memberList.length}/{memberLimit} {t('groups.members')}
-                  </p>
+                  <p>{memberList.length}/{memberLimit} {t('groups.members')}</p>
                   <p>{group.schedule ?? t('groups.scheduleTbd')}</p>
                   <p>{group.location ?? t('groups.locationTbd')}</p>
                   <p>{getUserDisplayName(creator, t('format.communityMember'))}</p>
@@ -143,25 +156,6 @@ function GroupsPage() {
           })}
         </ul>
       ) : null}
-
-      <section className="manage-panel">
-        <h2>{t('groups.yourGroups')}</h2>
-        <ul>
-          {groups.slice(0, 5).map((group) => (
-            <li key={`manage-${getEntityId(group) ?? group.name}`}>
-              <span>{group.name ?? t('groups.unnamedGroup')}</span>
-              <div className="manage-actions">
-                <button type="button" className="button button-secondary">
-                  {t('groups.edit')}
-                </button>
-                <button type="button" className="button button-danger">
-                  {t('groups.delete')}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
     </section>
   );
 }

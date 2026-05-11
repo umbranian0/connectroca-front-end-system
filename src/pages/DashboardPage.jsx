@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   fetchGroups,
@@ -14,6 +14,7 @@ import {
   formatRelativeTime,
   getAreaLabel,
   getEntityId,
+  getRelationMany,
   getRelationOne,
   getUserDisplayName,
   toNumber,
@@ -43,7 +44,20 @@ function DashboardPage() {
     [t],
   );
 
+  const currentUserId = useMemo(() => getEntityId(user), [user]);
+
   const loadDashboard = useCallback(async () => {
+    if (!token || !currentUserId) {
+      setProfiles([]);
+      setMaterials([]);
+      setTopics([]);
+      setGroups([]);
+      setPosts([]);
+      setError('');
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -67,7 +81,7 @@ function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [t, token]);
+  }, [currentUserId, t, token]);
 
   useEffect(() => {
     void loadDashboard();
@@ -76,11 +90,42 @@ function DashboardPage() {
   const activeProfile = useMemo(() => {
     const currentUserProfile = profiles.find((profile) => {
       const profileUser = getRelationOne(profile, 'user');
-      return getEntityId(profileUser) === user?.id;
+      return getEntityId(profileUser) === currentUserId;
     });
 
-    return currentUserProfile ?? profiles[0] ?? fallbackProfile;
-  }, [fallbackProfile, profiles, user?.id]);
+    return currentUserProfile ?? fallbackProfile;
+  }, [currentUserId, fallbackProfile, profiles]);
+
+  const userTopics = useMemo(
+    () => topics.filter((topic) => getEntityId(getRelationOne(topic, 'creator')) === currentUserId),
+    [currentUserId, topics],
+  );
+
+  const userMaterials = useMemo(
+    () => materials.filter((material) => getEntityId(getRelationOne(material, 'author')) === currentUserId),
+    [currentUserId, materials],
+  );
+
+  const userPosts = useMemo(
+    () => posts.filter((post) => getEntityId(getRelationOne(post, 'author')) === currentUserId),
+    [currentUserId, posts],
+  );
+
+  const userGroups = useMemo(
+    () =>
+      groups.filter((group) => {
+        const creatorId = getEntityId(getRelationOne(group, 'creator'));
+        if (creatorId === currentUserId) {
+          return true;
+        }
+
+        const members = getRelationMany(group, 'members');
+        return members.some(
+          (member) => getEntityId(getRelationOne(member, 'user')) === currentUserId,
+        );
+      }),
+    [currentUserId, groups],
+  );
 
   const level = Math.max(toNumber(activeProfile?.level, 5), 1);
   const points = Math.max(toNumber(activeProfile?.points, 240), 0);
@@ -91,7 +136,7 @@ function DashboardPage() {
   const recentActivities = useMemo(() => {
     const items = [];
 
-    posts.forEach((post) => {
+    userPosts.forEach((post) => {
       const topic = getRelationOne(post, 'topic');
       const author = getRelationOne(post, 'author');
 
@@ -105,7 +150,7 @@ function DashboardPage() {
       });
     });
 
-    topics.forEach((topic) => {
+    userTopics.forEach((topic) => {
       const creator = getRelationOne(topic, 'creator');
       const area = getRelationOne(topic, 'area');
 
@@ -119,7 +164,7 @@ function DashboardPage() {
       });
     });
 
-    materials.forEach((material) => {
+    userMaterials.forEach((material) => {
       const author = getRelationOne(material, 'author');
 
       items.push({
@@ -135,12 +180,12 @@ function DashboardPage() {
     return items
       .sort((a, b) => new Date(b.time ?? 0).getTime() - new Date(a.time ?? 0).getTime())
       .slice(0, 4);
-  }, [materials, posts, t, topics]);
+  }, [t, userMaterials, userPosts, userTopics]);
 
   const popularTopics = useMemo(() => {
-    const sorted = [...topics].sort((a, b) => toNumber(b.views) - toNumber(a.views));
+    const sorted = [...userTopics].sort((a, b) => toNumber(b.views) - toNumber(a.views));
     return sorted.slice(0, 3);
-  }, [topics]);
+  }, [userTopics]);
 
   return (
     <section className="page-section dashboard-page">
@@ -169,9 +214,9 @@ function DashboardPage() {
       </header>
 
       <div className="stats-grid">
-        <StatCard icon="T" value={topics.length} label={t('dashboard.topics')} />
-        <StatCard icon="M" value={materials.length} label={t('dashboard.materials')} />
-        <StatCard icon="G" value={groups.length} label={t('dashboard.groups')} />
+        <StatCard icon="T" value={userTopics.length} label={t('dashboard.topics')} />
+        <StatCard icon="M" value={userMaterials.length} label={t('dashboard.materials')} />
+        <StatCard icon="G" value={userGroups.length} label={t('dashboard.groups')} />
         <StatCard icon="P" value={points} label={t('dashboard.points')} />
       </div>
 
@@ -246,3 +291,4 @@ function DashboardPage() {
 }
 
 export default DashboardPage;
+

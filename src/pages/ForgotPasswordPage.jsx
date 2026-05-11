@@ -1,6 +1,7 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { requestPasswordReset } from '../api/authApi';
+import BrandLogo from '../components/BrandLogo';
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -40,8 +41,7 @@ function ForgotPasswordPage() {
     <div className="auth-shell">
       <section className="auth-card figma-login-card">
         <div className="login-brand">
-          <img
-            src="/assets/connectroca_logo.png"
+          <BrandLogo
             alt="ConnectTroca logo"
             className="brand-logo"
             loading="eager"

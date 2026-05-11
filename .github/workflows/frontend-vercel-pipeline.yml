@@ -27,6 +27,7 @@ jobs:
         run: npm run build
 
       - name: Sync Vercel env vars from template
+        continue-on-error: true
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
@@ -34,19 +35,14 @@ jobs:
           VERCEL_STRAPI_URL: ${{ vars.VERCEL_STRAPI_URL }}
         run: node scripts/sync-vercel-env.mjs
 
-      - name: Pull Vercel project settings
+      - name: Deploy to Vercel production
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-        run: npx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-
-      - name: Build Vercel output
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: npx vercel build --prod --token="$VERCEL_TOKEN"
-
-      - name: Deploy to Vercel production
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: npx vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+          VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+        run: |
+          if [ -z "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_TEAM_ID" ]; then
+            export VERCEL_ORG_ID="$VERCEL_TEAM_ID"
+          fi
+          npx vercel deploy --prod --yes --token="$VERCEL_TOKEN"
