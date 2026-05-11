@@ -45,6 +45,11 @@ Set these in Vercel Project Settings -> Environment Variables for both `Producti
 
 Students must run the frontend through Docker (`docker compose up --build -d`) and not through host `npm run dev`.
 
+When testing against local backend, also validate:
+
+- `http://localhost:1337/api/health`
+- `http://localhost:1337/documentation`
+
 ## Resolution order in code
 
 1. `VITE_STRAPI_URL`

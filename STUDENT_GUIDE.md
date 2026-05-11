@@ -1,10 +1,10 @@
-# ConnectTroca Frontend - Student Guide (Docker Required)
+﻿# ConnectTroca Frontend - Student Guide (Docker Required)
 
 ## Objective
 
-Run the frontend reproducibly using Docker and switch backend target with a single variable.
+Run the frontend reproducibly using Docker and validate integration with the updated backend access model.
 
-## 1. First run on a new computer
+## 1) First run on a new computer
 
 ```powershell
 cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\frontend_conectra"
@@ -16,7 +16,22 @@ Open:
 
 - `http://localhost:5173`
 
-## 2. Switch backend target (single change)
+## 2) Backend required for local integration
+
+Start backend in parallel from the backend repository:
+
+```powershell
+cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\backend_conectra\connectroca-back-end-system"
+Copy-Item .env.example .env   # first run only
+docker compose up --build -d
+```
+
+Check backend:
+
+- `http://localhost:1337/api/health`
+- `http://localhost:1337/documentation`
+
+## 3) Switch backend target (single change)
 
 Edit `.env`:
 
@@ -27,19 +42,13 @@ Keep this empty unless you need hard override:
 
 - `VITE_STRAPI_URL=`
 
-After changing `.env`, restart:
+After changing `.env`, restart frontend:
 
 ```powershell
 docker compose up --build -d
 ```
 
-## 3. Required backend URLs
-
-- Local backend: `http://localhost:1337`
-- Development backend (Heroku):
-  `https://connectra-backend-system-f4a977a741b9.herokuapp.com`
-
-## 4. Quick validation
+## 4) Quick validation
 
 1. Check container status:
 
@@ -50,8 +59,9 @@ docker compose ps
 2. Open `/login`.
 3. Verify header API base URL.
 4. Login and open dashboard/forum/materials.
+5. Confirm protected data is scoped to logged-in user.
 
-## 5. Daily commands
+## 5) Daily commands
 
 Logs:
 
@@ -71,13 +81,14 @@ Rebuild/start:
 docker compose up --build -d
 ```
 
-## 6. Common issues
+## 6) Common issues
 
 - API errors: check `VITE_BACKEND_TARGET` and `VITE_STRAPI_URL`.
-- Auth failures: check Strapi permissions for Users/Auth routes.
+- Backend not ready: verify `http://localhost:1337/api/health` returns `200`.
+- Auth/visibility mismatches: ensure backend branch with relation fixes is running.
 - 404 on deployed routes: verify `vercel.json` rewrite to `/index.html`.
 
-## 7. Config location
+## 7) Config location
 
 - Runtime resolution logic: `src/config/runtimeConfig.js`
 - Deployment env checklist: `DEPLOYMENT_ENVIRONMENT.md`
