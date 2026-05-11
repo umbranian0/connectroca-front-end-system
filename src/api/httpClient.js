@@ -1,5 +1,6 @@
 import { getStrapiBaseUrlFromConfig, runtimeConfig } from '../config/runtimeConfig';
-import { AUTH_EXPIRED_EVENT, AUTH_STORAGE_KEY } from '../features/auth/constants';
+import { AUTH_EXPIRED_EVENT } from '../features/auth/constants';
+import { clearStoredAuthToken, getStoredAuthToken } from '../features/auth/tokenStorage';
 
 export function getStrapiBaseUrl() {
   return getStrapiBaseUrlFromConfig();
@@ -35,19 +36,11 @@ function extractErrorMessage(payload, fallback) {
 }
 
 function getTokenFromStorage() {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-
-  return window.localStorage.getItem(AUTH_STORAGE_KEY) ?? '';
+  return getStoredAuthToken();
 }
 
 function clearStoredToken() {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  clearStoredAuthToken();
 }
 
 function normalizePath(path) {
