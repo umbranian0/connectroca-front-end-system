@@ -88,7 +88,7 @@ function ProfilePage() {
     return byUser ?? null;
   }, [profiles, user]);
 
-  const profileUser = getRelationOne(profile, 'user');
+  const profileUser = getRelationOne(profile, 'users_permissions_user');
   const managedUser = user ?? profileUser ?? null;
   const profileId = profile?.id ?? null;
 
@@ -114,12 +114,12 @@ function ProfilePage() {
 
   const authoredTopics = useMemo(() => {
     const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
-    return topics.filter((topic) => getEntityId(getRelationOne(topic, 'creator')) === authorId);
+    return topics.filter((topic) => getEntityId(getRelationOne(topic, 'users_permissions_user')) === authorId);
   }, [managedUser, profileUser, topics]);
 
   const authoredMaterials = useMemo(() => {
     const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
-    return materials.filter((material) => getEntityId(getRelationOne(material, 'author')) === authorId);
+    return materials.filter((material) => getEntityId(getRelationOne(material, 'users_permissions_user')) === authorId);
   }, [materials, managedUser, profileUser]);
 
   const interests = useMemo(() => {
@@ -132,7 +132,7 @@ function ProfilePage() {
     return userAreas
       .filter(
         (entry) =>
-          getEntityId(getRelationOne(entry, 'user')) ===
+          getEntityId(getRelationOne(entry, 'users_permissions_user')) ===
           (getEntityId(profileUser) ?? getEntityId(managedUser)),
       )
       .map((entry) => {
@@ -280,7 +280,7 @@ function ProfilePage() {
         await createProfile(
           {
             ...payload,
-            user: managedUser.id,
+            users_permissions_user: managedUser.id,
           },
           token,
         );
@@ -343,7 +343,7 @@ function ProfilePage() {
                 value={accountForm.username}
                 onChange={handleAccountChange('username')}
               />
-              {accountErrors.username ? <small className="form-error">{accountErrors.username}</small> : null}
+              {accountErrors.username ? <p className="status-error">{accountErrors.username}</p> : null}
             </label>
 
             <label className="form-field" htmlFor="profile-email">
@@ -354,7 +354,7 @@ function ProfilePage() {
                 value={accountForm.email}
                 onChange={handleAccountChange('email')}
               />
-              {accountErrors.email ? <small className="form-error">{accountErrors.email}</small> : null}
+              {accountErrors.email ? <p className="status-error">{accountErrors.email}</p> : null}
             </label>
 
             <div className="inline-actions">
@@ -380,7 +380,7 @@ function ProfilePage() {
                 value={profileForm.displayName}
                 onChange={handleProfileChange('displayName')}
               />
-              {profileErrors.displayName ? <small className="form-error">{profileErrors.displayName}</small> : null}
+              {profileErrors.displayName ? <p className="status-error">{profileErrors.displayName}</p> : null}
             </label>
 
             <label className="form-field" htmlFor="profile-course">
@@ -402,7 +402,7 @@ function ProfilePage() {
                 value={profileForm.year}
                 onChange={handleProfileChange('year')}
               />
-              {profileErrors.year ? <small className="form-error">{profileErrors.year}</small> : null}
+              {profileErrors.year ? <p className="status-error">{profileErrors.year}</p> : null}
             </label>
 
             <label className="form-field" htmlFor="profile-bio">
