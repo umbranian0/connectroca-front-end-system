@@ -12,12 +12,12 @@ export async function fetchUsers(token) {
   return normalizeStrapiCollection(payload);
 }
 
-export async function updateUser(userId, userData, token) {
-  if (!userId) {
-    throw new Error('User ID is required to update user data.');
+export async function updateUser(userData, token) {
+  if (!userData || typeof userData !== 'object') {
+    throw new Error('User data is required to update account data.');
   }
 
-  return request(`${USERS_ENDPOINT}/${userId}`, {
+  return request(`${USERS_ENDPOINT}/me`, {
     method: 'PUT',
     token,
     body: userData,
