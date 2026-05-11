@@ -1,28 +1,25 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchCurrentUser, loginWithLocalCredentials } from '../../api/authApi';
-import { AUTH_EXPIRED_EVENT, AUTH_STORAGE_KEY } from './constants';
+import { AUTH_EXPIRED_EVENT } from './constants';
+import {
+  clearStoredAuthToken,
+  getStoredAuthToken,
+  setStoredAuthToken,
+} from './tokenStorage';
 
 export const AuthContext = createContext(null);
 
 function getTokenFromStorage() {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-
-  return window.localStorage.getItem(AUTH_STORAGE_KEY) ?? '';
+  return getStoredAuthToken();
 }
 
 function persistToken(nextToken) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
   if (!nextToken) {
-    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    clearStoredAuthToken();
     return;
   }
 
-  window.localStorage.setItem(AUTH_STORAGE_KEY, nextToken);
+  setStoredAuthToken(nextToken);
 }
 
 export function AuthProvider({ children }) {
