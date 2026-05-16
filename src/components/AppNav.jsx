@@ -2,6 +2,7 @@
 
 const NAV_ITEMS = [
   { to: '/activities', label: 'Activities' },
+  { to: '/profile', label: 'Profile' },
   { to: '/users', label: 'Users' },
 ];
 

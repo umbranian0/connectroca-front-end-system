@@ -10,3 +10,11 @@ export async function fetchUsers(token) {
 
   return normalizeStrapiCollection(payload);
 }
+
+export async function fetchUserById(id, token) {
+  const payload = await request(`${USERS_ENDPOINT}/${id}`, {
+    token,
+  });
+
+  return payload;
+}

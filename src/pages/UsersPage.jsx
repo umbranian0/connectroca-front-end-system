@@ -69,7 +69,11 @@ function UsersPage() {
         <ul className="entity-list">
           {users.map((user) => (
             <li key={user.id ?? user.documentId ?? user.email} className="entity-card">
-              <h2>{getUserDisplayName(user)}</h2>
+              <h2>
+                <Link to={`/users/${user.id}`}>
+                {getUserDisplayName(user)}
+                </Link>
+              </h2>
               <p>{user.email ?? 'No email'}</p>
               <span className="meta-copy">Role: {getUserRoleLabel(user)}</span>
             </li>
