@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchActivities } from '../api/activitiesApi';
+import { joinGroup } from '../api/conectraApi';
 import PageContainer from '../components/PageContainer';
 import { useAuth } from '../features/auth/useAuth';
 import {
@@ -11,7 +12,7 @@ import {
 } from '../utils/strapi';
 
 function ActivitiesPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [activities, setActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,6 +43,23 @@ function ActivitiesPage() {
       setIsLoading(false);
     }
   }, [token]);
+
+  // --- NOVA FUNÇÃO PARA O CLIQUE DO BOTÃO ---
+  const handleJoinGroup = async (activityId) => {
+    if (!token || !user) {
+      alert("Precisas de estar logado para entrar num grupo!");
+      return;
+    }
+
+    try {
+      await joinGroup(token, user.id, activityId);
+      alert("Boa! Agora fazes parte deste grupo.");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao entrar no grupo. Verifica o console.");
+    }
+  };
+  // ------------------------------------------
 
   useEffect(() => {
     void loadActivities();
@@ -81,6 +99,15 @@ function ActivitiesPage() {
               <span className="meta-copy">
                 {formatDateTime(activity.updatedAt ?? activity.createdAt ?? activity.date)}
               </span>
+              
+              <div style={{ marginTop: '1rem' }}>
+                <button 
+                  className="button button-primary"
+                  onClick={() => handleJoinGroup(activity.id)}
+                >
+                  Juntar-se ao grupo
+                </button>
+              </div>
             </li>
           ))}
         </ul>
