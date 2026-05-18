@@ -104,7 +104,7 @@ function GroupChatPage() {
       <ul className="chat-thread">
         {!isLoading && !error && conversationMessages.length === 0 ? (
           <li className="chat-bubble">
-            <p className="status-message">Ainda não existem mensagens para este grupo.</p>
+            <p className="status-message">Ainda nï¿½o existem mensagens para este grupo.</p>
           </li>
         ) : null}
 

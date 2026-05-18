@@ -274,16 +274,21 @@ function ProfilePage() {
     };
 
     try {
+      let updatedProfileData;
+
       if (profileId) {
-        await updateProfile(profileId, payload, token);
+        const response = await updateProfile(profileId, payload, token);
+        // Garante a extração do objeto correto vindo da API do Strapi (normalmente dentro de response.data ou direto na response)
+        updatedProfileData = response?.data ?? response;
       } else {
-        await createProfile(
+        const response = await createProfile(
           {
             ...payload,
             users_permissions_user: managedUser.id,
           },
           token,
         );
+        updatedProfileData = response?.data ?? response;
       }
 
       setProfileStatus({
@@ -294,6 +299,16 @@ function ProfilePage() {
           : 'Profile created successfully.',
       });
 
+      // Atualiza o estado local de imediato para refletir as alterações na interface sem delay
+      if (updatedProfileData) {
+        setProfiles((prevProfiles) =>
+          profileId
+            ? prevProfiles.map((p) => (p.id === profileId ? { ...p, ...updatedProfileData } : p))
+            : [...prevProfiles, updatedProfileData]
+        );
+      }
+
+      // Recarrega todos os dados em segundo plano por segurança
       await loadProfile();
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : 'Unable to update profile.';
@@ -456,4 +471,3 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
-

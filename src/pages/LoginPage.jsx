@@ -58,7 +58,7 @@ function LoginPage() {
         </div>
 
         <h1>Acesse a plataforma</h1>
-        <p>Faça login ou registre-se para começar a construir seus projetos ainda hoje.</p>
+        <p>Faï¿½a login ou registre-se para comeï¿½ar a construir seus projetos ainda hoje.</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label htmlFor="identifier">E-mail</label>
@@ -100,7 +100,7 @@ function LoginPage() {
         </form>
 
         <p className="auth-signup-copy">
-          Ainda não tem uma conta?{' '}
+          Ainda nï¿½o tem uma conta?{' '}
           <Link className="auth-inline-link" to="/register">
             Inscreva-se
           </Link>
