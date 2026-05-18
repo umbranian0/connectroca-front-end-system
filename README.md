@@ -20,7 +20,7 @@ Node.js/npm on host are optional and only required for maintainer workflows.
 ```powershell
 cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\frontend_conectra"
 Copy-Item .env.example .env
-docker compose up --build -d
+docker compose up --build -docker compose up --build -d
 ```
 
 Open:

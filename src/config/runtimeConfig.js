@@ -1,6 +1,6 @@
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1']);
 
-const BACKEND_TARGET_LOCAL = 'local';
+const BACKEND_TARGET_LOCAL = 'development';
 const BACKEND_TARGET_DEVELOPMENT = 'development';
 
 const DEFAULT_STRAPI_URLS = Object.freeze({
