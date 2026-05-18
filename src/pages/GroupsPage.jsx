@@ -88,8 +88,9 @@ function GroupsPage() {
           <h1>{t('groups.title')}</h1>
           <p>{t('groups.subtitle')}</p>
         </div>
-        <button type="button" className="button button-primary">
-          + {t('groups.newGroup')}
+        <button type="button" className="button button-primary" onClick={t('groups.newGroup')}>
+          Novo 
+          + 
         </button>
       </header>
 
