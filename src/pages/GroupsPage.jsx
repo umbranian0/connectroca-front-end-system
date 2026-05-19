@@ -1,6 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchGroupMembers, fetchGroups, joinGroup } from '../api/conectraApi'; // Adicionei o joinGroup aqui
+import { fetchGroupMembers, fetchGroups, joinGroup } from '../api/conectraApi'; 
 import { useAuth } from '../features/auth/useAuth';
 import { useI18n } from '../features/i18n/useI18n';
 import {
@@ -19,7 +19,6 @@ function GroupsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Carrega os dados da API
   const loadGroups = useCallback(async () => {
     setIsLoading(true);
     setError('');
@@ -42,12 +41,9 @@ function GroupsPage() {
     void loadGroups();
   }, [loadGroups]);
 
-  // --- NOVA FUNÇÃO QUE RESOLVE O PROBLEMA ---
   const handleJoinClick = async (groupId) => {
     try {
-      // Usamos o Number() para garantir que o ID vai como número e não como texto
       await joinGroup(token, Number(user.id), Number(groupId));
-      
       alert("Boa! Agora fazes parte deste grupo.");
       loadGroups(); 
     } catch (err) {
@@ -55,12 +51,11 @@ function GroupsPage() {
     }
   };
 
-  // Mapeia quem são os membros
   const groupMembersMap = useMemo(() => {
     const map = new Map();
     memberships.forEach((membership) => {
       const group = getRelationOne(membership, 'group');
-      const groupId = String(getEntityId(group) ?? '');
+      const groupId = getEntityId(group);
       if (!groupId) return;
       const current = map.get(groupId) ?? [];
       current.push(membership);
@@ -99,20 +94,18 @@ function GroupsPage() {
       {!isLoading && !error && groups.length > 0 ? (
         <ul className="group-card-list">
           {groups.map((group, index) => {
-            const groupId = String(getEntityId(group) ?? '');
+            const groupId = getEntityId(group);
             const area = getRelationOne(group, 'area');
             const creator = getRelationOne(group, 'creator');
             const memberList = groupMembersMap.get(groupId) ?? [];
             const memberLimit = Math.max(toNumber(group.memberLimit, 30), 1);
             const occupancy = Math.min((memberList.length / memberLimit) * 100, 100);
-            const isMember = memberGroupIds.has(groupId);
+            const isMember = memberGroupIds.has(String(groupId ?? ''));
 
             return (
               <li key={groupId || group.name} className="group-card" style={{ '--card-index': index }}>
                 <div className="group-card-banner">
                   <strong>{group.name ?? t('groups.unnamedGroup')}</strong>
-                  
-                  {/* O SEU BOTÃO AQUI */}
                   <button 
                     type="button"
                     disabled={isMember}
