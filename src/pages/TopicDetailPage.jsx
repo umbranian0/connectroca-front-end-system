@@ -74,7 +74,15 @@ function TopicDetailPage() {
     setReplyStatus({ isSubmitting: true, error: '', success: '' });
 
     try {
-      await createPost({ content: replyContent, topicId: topicId ?? '' }, token);
+      const topicRelationId = String(getEntityId(topic) ?? topicId ?? '');
+      await createPost(
+        {
+          content: replyContent,
+          topicId: topicRelationId,
+          postDate: new Date().toISOString(),
+        },
+        token,
+      );
       setReplyContent('');
       setReplyStatus({ isSubmitting: false, error: '', success: t('topicDetail.replySuccess') });
       await loadThread();
