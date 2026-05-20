@@ -1,4 +1,6 @@
-import { getStrapiBaseUrlFromConfig } from '../config/runtimeConfig';
+import { getStrapiBaseUrlFromConfig, runtimeConfig } from '../config/runtimeConfig';
+import { AUTH_EXPIRED_EVENT } from '../features/auth/constants';
+import { clearStoredAuthToken, getStoredAuthToken } from '../features/auth/tokenStorage';
 
 export function getStrapiBaseUrl() {
   return getStrapiBaseUrlFromConfig();
@@ -33,8 +35,45 @@ function extractErrorMessage(payload, fallback) {
   return fallback;
 }
 
+function getTokenFromStorage() {
+  return getStoredAuthToken();
+}
+
+function clearStoredToken() {
+  clearStoredAuthToken();
+}
+
+function normalizePath(path) {
+  if (!path) {
+    return '';
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    try {
+      const parsed = new URL(path);
+      return parsed.pathname;
+    } catch {
+      return path;
+    }
+  }
+
+  return path.startsWith('/') ? path : `/${path}`;
+}
+
+function isAuthEndpoint(path) {
+  const normalized = normalizePath(path);
+  const knownAuthEndpoints = new Set([
+    runtimeConfig.endpoints.auth,
+    runtimeConfig.endpoints.register,
+    runtimeConfig.endpoints.forgotPassword,
+  ]);
+
+  return knownAuthEndpoints.has(normalized);
+}
+
 export async function request(path, options = {}) {
   const { method = 'GET', body, token, headers = {} } = options;
+  const resolvedToken = token === undefined ? getTokenFromStorage() : token;
 
   const requestHeaders = {
     Accept: 'application/json',
@@ -45,8 +84,8 @@ export async function request(path, options = {}) {
     requestHeaders['Content-Type'] = 'application/json';
   }
 
-  if (token) {
-    requestHeaders.Authorization = `Bearer ${token}`;
+  if (resolvedToken) {
+    requestHeaders.Authorization = `Bearer ${resolvedToken}`;
   }
 
   const response = await fetch(buildUrl(path), {
@@ -67,6 +106,14 @@ export async function request(path, options = {}) {
   }
 
   if (!response.ok) {
+    if (response.status === 401 && resolvedToken && !isAuthEndpoint(path)) {
+      clearStoredToken();
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+      }
+    }
+
     const message = extractErrorMessage(payload, `Request failed with status ${response.status}.`);
     const error = new Error(message);
     error.status = response.status;
