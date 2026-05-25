@@ -84,6 +84,7 @@ function GroupChatPage() {
   }, [activeTopic, posts]);
 
   const handleSendMessage = useCallback(async () => {
+    // Garante que não envia se estiver vazio ou se não houver um tópico válido selecionado
     if (!newMessage.trim() || !activeTopic) {
       return;
     }
@@ -137,7 +138,7 @@ function GroupChatPage() {
       <ul className="chat-thread">
         {!isLoading && !error && conversationMessages.length === 0 ? (
           <li className="chat-bubble">
-            <p className="status-message">Ainda n�o existem mensagens para este grupo.</p>
+            <p className="status-message">Ainda não existem mensagens para este grupo.</p>
           </li>
         ) : null}
 
@@ -160,7 +161,7 @@ function GroupChatPage() {
       <footer className="chat-input-wrap">
         <input
           type="text"
-          placeholder="Pergunte qualquer coisa"
+          placeholder={activeTopic ? "Pergunte qualquer coisa" : "Carregando tópicos disponíveis..."}
           value={newMessage}
           onChange={(event) => setNewMessage(event.target.value)}
           onKeyDown={(event) => {
@@ -169,13 +170,15 @@ function GroupChatPage() {
               void handleSendMessage();
             }
           }}
-          disabled={isSending || !activeTopic}
+          // Liberado para digitação assim que o carregamento geral terminar
+          disabled={isLoading || isSending}
         />
         <button
           type="button"
           className="button button-primary"
           onClick={() => void handleSendMessage()}
-          disabled={isSending || !newMessage.trim() || !activeTopic}
+          // Só ativa o botão de envio se houver texto E um tópico válido associado
+          disabled={isLoading || isSending || !newMessage.trim() || !activeTopic}
         >
           {isSending ? 'Enviando...' : 'Enviar'}
         </button>
