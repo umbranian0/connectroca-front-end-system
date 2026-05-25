@@ -32,10 +32,10 @@ function pickMediaUrl(fileEntry) {
   }
 
   const preferredUrl =
+    fileEntry.url ??
     fileEntry.formats?.medium?.url ??
     fileEntry.formats?.small?.url ??
-    fileEntry.formats?.thumbnail?.url ??
-    fileEntry.url;
+    fileEntry.formats?.thumbnail?.url;
 
   return normalizeMediaUrl(preferredUrl);
 }

@@ -216,7 +216,6 @@ function ProfilePage() {
 
     try {
       const updated = await updateUser(
-        managedUser.id,
         {
           username: accountForm.username.trim(),
           email: accountForm.email.trim(),
