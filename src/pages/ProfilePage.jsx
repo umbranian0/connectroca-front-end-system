@@ -88,7 +88,8 @@ function ProfilePage() {
     return byUser ?? null;
   }, [profiles, user]);
 
-  const profileUser = getRelationOne(profile, 'users_permissions_user');
+  // Sincronizado com a chave "user" retornada pela API
+  const profileUser = getRelationOne(profile, 'user');
   const managedUser = user ?? profileUser ?? null;
   const profileId = profile?.id ?? null;
 
@@ -114,12 +115,12 @@ function ProfilePage() {
 
   const authoredTopics = useMemo(() => {
     const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
-    return topics.filter((topic) => getEntityId(getRelationOne(topic, 'users_permissions_user')) === authorId);
+    return topics.filter((topic) => getEntityId(getRelationOne(topic, 'user')) === authorId);
   }, [managedUser, profileUser, topics]);
 
   const authoredMaterials = useMemo(() => {
     const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
-    return materials.filter((material) => getEntityId(getRelationOne(material, 'users_permissions_user')) === authorId);
+    return materials.filter((material) => getEntityId(getRelationOne(material, 'user')) === authorId);
   }, [materials, managedUser, profileUser]);
 
   const interests = useMemo(() => {
@@ -132,7 +133,7 @@ function ProfilePage() {
     return userAreas
       .filter(
         (entry) =>
-          getEntityId(getRelationOne(entry, 'users_permissions_user')) ===
+          getEntityId(getRelationOne(entry, 'user')) ===
           (getEntityId(profileUser) ?? getEntityId(managedUser)),
       )
       .map((entry) => {
@@ -266,6 +267,7 @@ function ProfilePage() {
       ? Number.parseInt(profileForm.year.trim(), 10)
       : null;
 
+    // Envia o objeto plano contendo apenas as propriedades pretendidas
     const profileAttributes = {
       displayName: profileForm.displayName.trim(),
       course: toTrimmedOrNull(profileForm.course),
@@ -277,19 +279,20 @@ function ProfilePage() {
       let updatedProfileData;
 
       if (profileId) {
-        const payload = {
-          data: profileAttributes
-        };
-        const response = await updateProfile(profileId, payload, token);
+        // Envia os dados soltos. O conectraApi adiciona o wrapper { data: ... }
+        const response = await updateProfile(profileId, profileAttributes, token);
         updatedProfileData = response?.data ?? response;
       } else {
-        const payload = {
-          data: {
-            ...profileAttributes,
-            users_permissions_user: managedUser.id,
-          }
+        // Envia os dados soltos unificados com os metadados iniciais exigidos pelo cURL
+        const newProfilePayload = {
+          ...profileAttributes,
+          user: managedUser.id,
+          registrationDate: new Date().toISOString().split('T')[0], // Envia YYYY-MM-DD
+          level: 1,
+          points: 0,
         };
-        const response = await createProfile(payload, token);
+
+        const response = await createProfile(newProfilePayload, token);
         updatedProfileData = response?.data ?? response;
       }
 
