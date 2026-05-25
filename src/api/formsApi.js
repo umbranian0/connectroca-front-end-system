@@ -17,8 +17,8 @@ export async function createAccount(payload, token) {
 
 export async function createPost(payload, token) {
   const topicId = toOptionalInteger(payload.topicId);
+  const authorId = toOptionalInteger(payload.authorId); // Garante que vira número inteiro
 
-  // Payload limpo: sem chaves invasivas como 'author' ou 'user'
   const data = {
     content: payload.content.trim(),
     postDate: payload.postDate,
@@ -28,9 +28,14 @@ export async function createPost(payload, token) {
     data.topic = topicId;
   }
 
+  // Se o autor existir e for um ID válido, anexa ao payload
+  if (authorId) {
+    data.author = authorId; 
+  }
+
   const response = await request(POSTS_ENDPOINT, {
     method: 'POST',
-    token, // O token vai no cabeçalho para que o Strapi saiba quem enviou
+    token, 
     body: { data },
   });
 
