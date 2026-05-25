@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { fetchGroups, fetchPosts, fetchTopics } from '../api/conectraApi';
+import { createPost } from '../api/formsApi';
 import { useAuth } from '../features/auth/useAuth';
 import {
   formatRelativeTime,
@@ -15,6 +16,8 @@ function GroupChatPage() {
   const [groups, setGroups] = useState([]);
   const [topics, setTopics] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -80,6 +83,37 @@ function GroupChatPage() {
       );
   }, [activeTopic, posts]);
 
+  const handleSendMessage = useCallback(async () => {
+    // Garante que não envia se estiver vazio ou se não houver um tópico válido selecionado
+    if (!newMessage.trim() || !activeTopic) {
+      return;
+    }
+
+    setIsSending(true);
+    setError('');
+
+    try {
+      const createdPost = await createPost(
+        {
+          content: newMessage.trim(),
+          topicId: getEntityId(activeTopic),
+        },
+        token,
+      );
+
+      setPosts((currentPosts) => [...currentPosts, createdPost]);
+      setNewMessage('');
+    } catch (requestError) {
+      const message =
+        requestError instanceof Error
+          ? requestError.message
+          : 'Não foi possível enviar a mensagem.';
+      setError(message);
+    } finally {
+      setIsSending(false);
+    }
+  }, [activeTopic, newMessage, token]);
+
   return (
     <section className="page-section group-chat-page">
       <header className="panel-title-row">
@@ -104,7 +138,7 @@ function GroupChatPage() {
       <ul className="chat-thread">
         {!isLoading && !error && conversationMessages.length === 0 ? (
           <li className="chat-bubble">
-            <p className="status-message">Ainda n�o existem mensagens para este grupo.</p>
+            <p className="status-message">Ainda não existem mensagens para este grupo.</p>
           </li>
         ) : null}
 
@@ -125,9 +159,28 @@ function GroupChatPage() {
       </ul>
 
       <footer className="chat-input-wrap">
-        <input type="text" placeholder="Pergunte qualquer coisa" disabled />
-        <button type="button" className="button button-primary" disabled>
-          ?
+        <input
+          type="text"
+          placeholder={activeTopic ? "Pergunte qualquer coisa" : "Carregando tópicos disponíveis..."}
+          value={newMessage}
+          onChange={(event) => setNewMessage(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              void handleSendMessage();
+            }
+          }}
+          // Liberado para digitação assim que o carregamento geral terminar
+          disabled={isLoading || isSending}
+        />
+        <button
+          type="button"
+          className="button button-primary"
+          onClick={() => void handleSendMessage()}
+          // Só ativa o botão de envio se houver texto E um tópico válido associado
+          disabled={isLoading || isSending || !newMessage.trim() || !activeTopic}
+        >
+          {isSending ? 'Enviando...' : 'Enviar'}
         </button>
       </footer>
     </section>
