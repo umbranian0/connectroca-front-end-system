@@ -29,7 +29,7 @@ export async function createPost(payload, token) {
   }
 
   if (authorId) {
-    data.author = authorId; // <-- Passa o ID do autor para o Strapi
+    data.user = authorId; // <-- Passa o ID do autor para o Strapi
   }
 
   const response = await request(POSTS_ENDPOINT, {
