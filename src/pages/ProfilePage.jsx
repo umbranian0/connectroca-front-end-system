@@ -265,7 +265,7 @@ function ProfilePage() {
       ? Number.parseInt(profileForm.year.trim(), 10)
       : null;
 
-    // Payload plano, pois o createProfile/updateProfile já envolve em { data: payload }
+    // Passamos o payload de forma "plana" porque o conectraApi já adiciona o { data: payload }
     const payload = {
       displayName: profileForm.displayName.trim(),
       course: toTrimmedOrNull(profileForm.course),
@@ -277,16 +277,13 @@ function ProfilePage() {
       let updatedProfileData;
 
       if (profileId) {
-        // Passamos o payload direto aqui
         const response = await updateProfile(profileId, payload, token);
         updatedProfileData = response?.data ?? response;
       } else {
-        // Passamos o payload plano com o ID do user. 
-        // Dica: Se der erro aqui, troca 'user' para 'users_permissions_user'
         const response = await createProfile(
           {
             ...payload,
-            user: managedUser.id, 
+            users_permissions_user: managedUser.id,
           },
           token,
         );
