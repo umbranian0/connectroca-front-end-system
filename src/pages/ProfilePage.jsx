@@ -293,9 +293,7 @@ function ProfilePage() {
       setProfileStatus({
         isSubmitting: false,
         error: '',
-        success: profileId
-          ? 'Profile data updated successfully.'
-          : 'Profile created successfully.',
+        success: profileId ? 'Profile data updated successfully.' : 'Profile created successfully.',
       });
 
       if (updatedProfileData) {
