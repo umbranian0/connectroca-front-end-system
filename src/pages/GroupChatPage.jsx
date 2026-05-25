@@ -12,7 +12,7 @@ import {
 
 function GroupChatPage() {
   const { groupId } = useParams();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [groups, setGroups] = useState([]);
   const [topics, setTopics] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -83,38 +83,39 @@ function GroupChatPage() {
       );
   }, [activeTopic, posts]);
 
-  const handleSendMessage = useCallback(async () => {
-    // Garante que não envia se estiver vazio ou se não houver um tópico válido selecionado
-    if (!newMessage.trim() || !activeTopic) {
-      return;
-    }
+const handleSendMessage = useCallback(async () => {
+  if (!newMessage.trim() || !activeTopic) {
+    return;
+  }
 
-    setIsSending(true);
-    setError('');
+  setIsSending(true);
+  setError('');
 
-    try {
-      // Dentro do GroupChatPage.js, na função handleSendMessage:
-const createdPost = await createPost(
-  {
-    content: newMessage.trim(),
-    topicId: getEntityId(activeTopic),
-    authorId: user?.id, // <-- Pegue o ID do usuário logado do seu useAuth()
-  },
-  token,
-);
+  // Descobre o ID do usuário logado de forma segura
+  const loggedInUserId = user?.id ?? user?.documentId ?? getEntityId(user);
 
-      setPosts((currentPosts) => [...currentPosts, createdPost]);
-      setNewMessage('');
-    } catch (requestError) {
-      const message =
-        requestError instanceof Error
-          ? requestError.message
-          : 'Não foi possível enviar a mensagem.';
-      setError(message);
-    } finally {
-      setIsSending(false);
-    }
-  }, [activeTopic, newMessage, token]);
+  try {
+    const createdPost = await createPost(
+      {
+        content: newMessage.trim(),
+        topicId: getEntityId(activeTopic),
+        authorId: loggedInUserId, // <-- Enviando o ID do autor aqui
+      },
+      token,
+    );
+
+    setPosts((currentPosts) => [...currentPosts, createdPost]);
+    setNewMessage('');
+  } catch (requestError) {
+    const message =
+      requestError instanceof Error
+        ? requestError.message
+        : 'Não foi possível enviar a mensagem.';
+    setError(message);
+  } finally {
+    setIsSending(false);
+  }
+}, [activeTopic, newMessage, token, user]); // <-- Adicione o "user" aqui no final do useMemo/useCallback
 
   return (
     <section className="page-section group-chat-page">
