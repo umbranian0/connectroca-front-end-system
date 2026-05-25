@@ -573,6 +573,7 @@ jobs:
           dbOptions: '--dbclient=sqlite --dbfile=./tmp/data.db'
           runEE: true
           jestOptions: '--shard=${{ matrix.shard }}'
+          
   sonarqube:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
@@ -644,6 +645,6 @@ jobs:
       - run: exit 1
         if: >-
           ${{
-                contains(needs.*.result, 'failure')
+               contains(needs.*.result, 'failure')
             || contains(needs.*.result, 'cancelled')
           }}
