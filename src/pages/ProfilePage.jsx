@@ -216,6 +216,7 @@ function ProfilePage() {
 
     try {
       const updated = await updateUser(
+        managedUser.id,
         {
           username: accountForm.username.trim(),
           email: accountForm.email.trim(),
@@ -265,7 +266,6 @@ function ProfilePage() {
       ? Number.parseInt(profileForm.year.trim(), 10)
       : null;
 
-    // Passamos o payload de forma "plana" porque o conectraApi já adiciona o { data: payload }
     const payload = {
       displayName: profileForm.displayName.trim(),
       course: toTrimmedOrNull(profileForm.course),
@@ -302,7 +302,7 @@ function ProfilePage() {
         setProfiles((prevProfiles) =>
           profileId
             ? prevProfiles.map((p) => (p.id === profileId ? { ...p, ...updatedProfileData } : p))
-            : [...prevProfiles, updatedProfileData]
+            : [...prevProfiles, updatedProfileData],
         );
       }
 
@@ -371,7 +371,11 @@ function ProfilePage() {
             </label>
 
             <div className="inline-actions">
-              <button type="submit" className="button button-primary" disabled={accountStatus.isSubmitting || !isAuthenticated}>
+              <button
+                type="submit"
+                className="button button-primary"
+                disabled={accountStatus.isSubmitting || !isAuthenticated}
+              >
                 {accountStatus.isSubmitting ? 'Saving account...' : 'Save account'}
               </button>
             </div>
@@ -429,7 +433,11 @@ function ProfilePage() {
             </label>
 
             <div className="inline-actions">
-              <button type="submit" className="button button-primary" disabled={profileStatus.isSubmitting || !isAuthenticated}>
+              <button
+                type="submit"
+                className="button button-primary"
+                disabled={profileStatus.isSubmitting || !isAuthenticated}
+              >
                 {profileStatus.isSubmitting ? 'Saving profile...' : 'Save profile'}
               </button>
             </div>
