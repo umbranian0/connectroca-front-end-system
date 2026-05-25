@@ -216,6 +216,7 @@ function ProfilePage() {
 
     try {
       const updated = await updateUser(
+        managedUser.id,
         {
           username: accountForm.username.trim(),
           email: accountForm.email.trim(),
@@ -265,7 +266,6 @@ function ProfilePage() {
       ? Number.parseInt(profileForm.year.trim(), 10)
       : null;
 
-    // Payload plano, pois o createProfile/updateProfile já envolve em { data: payload }
     const payload = {
       displayName: profileForm.displayName.trim(),
       course: toTrimmedOrNull(profileForm.course),
@@ -277,16 +277,13 @@ function ProfilePage() {
       let updatedProfileData;
 
       if (profileId) {
-        // Passamos o payload direto aqui
         const response = await updateProfile(profileId, payload, token);
         updatedProfileData = response?.data ?? response;
       } else {
-        // Passamos o payload plano com o ID do user. 
-        // Dica: Se der erro aqui, troca 'user' para 'users_permissions_user'
         const response = await createProfile(
           {
             ...payload,
-            user: managedUser.id, 
+            users_permissions_user: managedUser.id,
           },
           token,
         );
@@ -296,16 +293,14 @@ function ProfilePage() {
       setProfileStatus({
         isSubmitting: false,
         error: '',
-        success: profileId
-          ? 'Profile data updated successfully.'
-          : 'Profile created successfully.',
+        success: profileId ? 'Profile data updated successfully.' : 'Profile created successfully.',
       });
 
       if (updatedProfileData) {
         setProfiles((prevProfiles) =>
           profileId
             ? prevProfiles.map((p) => (p.id === profileId ? { ...p, ...updatedProfileData } : p))
-            : [...prevProfiles, updatedProfileData]
+            : [...prevProfiles, updatedProfileData],
         );
       }
 
@@ -374,7 +369,11 @@ function ProfilePage() {
             </label>
 
             <div className="inline-actions">
-              <button type="submit" className="button button-primary" disabled={accountStatus.isSubmitting || !isAuthenticated}>
+              <button
+                type="submit"
+                className="button button-primary"
+                disabled={accountStatus.isSubmitting || !isAuthenticated}
+              >
                 {accountStatus.isSubmitting ? 'Saving account...' : 'Save account'}
               </button>
             </div>
@@ -432,7 +431,11 @@ function ProfilePage() {
             </label>
 
             <div className="inline-actions">
-              <button type="submit" className="button button-primary" disabled={profileStatus.isSubmitting || !isAuthenticated}>
+              <button
+                type="submit"
+                className="button button-primary"
+                disabled={profileStatus.isSubmitting || !isAuthenticated}
+              >
                 {profileStatus.isSubmitting ? 'Saving profile...' : 'Save profile'}
               </button>
             </div>
