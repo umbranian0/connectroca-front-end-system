@@ -265,6 +265,7 @@ function ProfilePage() {
       ? Number.parseInt(profileForm.year.trim(), 10)
       : null;
 
+    // Payload plano, pois o createProfile/updateProfile já envolve em { data: payload }
     const payload = {
       displayName: profileForm.displayName.trim(),
       course: toTrimmedOrNull(profileForm.course),
@@ -276,14 +277,16 @@ function ProfilePage() {
       let updatedProfileData;
 
       if (profileId) {
+        // Passamos o payload direto aqui
         const response = await updateProfile(profileId, payload, token);
-        // Garante a extração do objeto correto vindo da API do Strapi (normalmente dentro de response.data ou direto na response)
         updatedProfileData = response?.data ?? response;
       } else {
+        // Passamos o payload plano com o ID do user. 
+        // Dica: Se der erro aqui, troca 'user' para 'users_permissions_user'
         const response = await createProfile(
           {
             ...payload,
-            users_permissions_user: managedUser.id,
+            user: managedUser.id, 
           },
           token,
         );
@@ -298,7 +301,6 @@ function ProfilePage() {
           : 'Profile created successfully.',
       });
 
-      // Atualiza o estado local de imediato para refletir as alterações na interface sem delay
       if (updatedProfileData) {
         setProfiles((prevProfiles) =>
           profileId
@@ -307,9 +309,9 @@ function ProfilePage() {
         );
       }
 
-      // Recarrega todos os dados em segundo plano por segurança
       await loadProfile();
     } catch (requestError) {
+      console.error('ERRO COMPLETO DA REQUISIÇÃO:', requestError);
       const message = requestError instanceof Error ? requestError.message : 'Unable to update profile.';
       setProfileStatus({ isSubmitting: false, error: message, success: '' });
     }
