@@ -266,7 +266,7 @@ function ProfilePage() {
       ? Number.parseInt(profileForm.year.trim(), 10)
       : null;
 
-    const payload = {
+    const profileAttributes = {
       displayName: profileForm.displayName.trim(),
       course: toTrimmedOrNull(profileForm.course),
       bio: toTrimmedOrNull(profileForm.bio),
@@ -277,16 +277,19 @@ function ProfilePage() {
       let updatedProfileData;
 
       if (profileId) {
+        const payload = {
+          data: profileAttributes
+        };
         const response = await updateProfile(profileId, payload, token);
         updatedProfileData = response?.data ?? response;
       } else {
-        const response = await createProfile(
-          {
-            ...payload,
+        const payload = {
+          data: {
+            ...profileAttributes,
             users_permissions_user: managedUser.id,
-          },
-          token,
-        );
+          }
+        };
+        const response = await createProfile(payload, token);
         updatedProfileData = response?.data ?? response;
       }
 
