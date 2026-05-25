@@ -93,13 +93,15 @@ function GroupChatPage() {
     setError('');
 
     try {
-      const createdPost = await createPost(
-        {
-          content: newMessage.trim(),
-          topicId: getEntityId(activeTopic),
-        },
-        token,
-      );
+      // Dentro do GroupChatPage.js, na função handleSendMessage:
+const createdPost = await createPost(
+  {
+    content: newMessage.trim(),
+    topicId: getEntityId(activeTopic),
+    authorId: user?.id, // <-- Pegue o ID do usuário logado do seu useAuth()
+  },
+  token,
+);
 
       setPosts((currentPosts) => [...currentPosts, createdPost]);
       setNewMessage('');
