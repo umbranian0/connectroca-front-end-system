@@ -17,7 +17,7 @@ export async function createAccount(payload, token) {
 
 export async function createPost(payload, token) {
   const topicId = toOptionalInteger(payload.topicId);
-  const authorId = toOptionalInteger(payload.authorId); 
+  const authorId = toOptionalInteger(payload.authorId); // <-- Captura o ID vindo do componente
 
   const data = {
     content: payload.content.trim(),
@@ -29,7 +29,7 @@ export async function createPost(payload, token) {
   }
 
   if (authorId) {
-    data.author = authorId; 
+    data.author = authorId; // <-- Passa o ID do autor para o Strapi
   }
 
   const response = await request(POSTS_ENDPOINT, {
