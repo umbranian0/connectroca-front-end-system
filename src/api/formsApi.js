@@ -17,6 +17,7 @@ export async function createAccount(payload, token) {
 
 export async function createPost(payload, token) {
   const topicId = toOptionalInteger(payload.topicId);
+  const authorId = toOptionalInteger(payload.authorId); 
 
   const data = {
     content: payload.content.trim(),
@@ -25,6 +26,10 @@ export async function createPost(payload, token) {
 
   if (topicId) {
     data.topic = topicId;
+  }
+
+  if (authorId) {
+    data.author = authorId; 
   }
 
   const response = await request(POSTS_ENDPOINT, {
