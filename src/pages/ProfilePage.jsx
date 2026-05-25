@@ -286,7 +286,7 @@ function ProfilePage() {
         // Envia os dados soltos unificados com os metadados iniciais exigidos pelo cURL
         const newProfilePayload = {
           ...profileAttributes,
-          user: managedUser.id,
+          user: 2,
           registrationDate: new Date().toISOString().split('T')[0], // Envia YYYY-MM-DD
           level: 1,
           points: 0,
