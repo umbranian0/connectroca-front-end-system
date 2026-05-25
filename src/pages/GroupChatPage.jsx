@@ -97,7 +97,7 @@ function GroupChatPage() {
         content: newMessage.trim(),
         topicId: getEntityId(activeTopic),
         // 2. Envia o ID do usuário logado obtido do seu contexto de autenticação
-        authorId: user?.id, 
+        author: 2
       },
       token,
     );
