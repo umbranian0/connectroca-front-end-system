@@ -18,19 +18,19 @@ export async function createAccount(payload, token) {
 export async function createPost(payload, token) {
   const topicId = toOptionalInteger(payload.topicId);
 
-  // Enviamos APENAS o conteúdo puro da mensagem
+  // Payload limpo: sem chaves invasivas como 'author' ou 'user'
   const data = {
     content: payload.content.trim(),
+    postDate: payload.postDate,
   };
 
-  // E associamos apenas o ID do tópico
   if (topicId) {
     data.topic = topicId;
   }
 
   const response = await request(POSTS_ENDPOINT, {
     method: 'POST',
-    token, // O token aqui já deveria ser usado pelo Strapi para saber quem é você!
+    token, // O token vai no cabeçalho para que o Strapi saiba quem enviou
     body: { data },
   });
 
