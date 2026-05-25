@@ -17,24 +17,20 @@ export async function createAccount(payload, token) {
 
 export async function createPost(payload, token) {
   const topicId = toOptionalInteger(payload.topicId);
-  const authorId = toOptionalInteger(payload.authorId); // <-- Captura o ID vindo do componente
 
+  // Enviamos APENAS o conteúdo puro da mensagem
   const data = {
     content: payload.content.trim(),
-    postDate: payload.postDate,
   };
 
+  // E associamos apenas o ID do tópico
   if (topicId) {
     data.topic = topicId;
   }
 
-  if (authorId) {
-    data.user = authorId; // <-- Passa o ID do autor para o Strapi
-  }
-
   const response = await request(POSTS_ENDPOINT, {
     method: 'POST',
-    token,
+    token, // O token aqui já deveria ser usado pelo Strapi para saber quem é você!
     body: { data },
   });
 
