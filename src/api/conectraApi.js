@@ -97,6 +97,15 @@ export function fetchPosts(token) {
   return fetchCollection(ENDPOINTS.posts, token);
 }
 
+export async function fetchPost(postId, token) {
+  if (!postId) {
+    throw new Error('Post ID is required to fetch a post.');
+  }
+
+  const payload = await request(withPopulate(withEntityId(ENDPOINTS.posts, postId)), { token });
+  return normalizeStrapiSingle(payload);
+}
+
 export function fetchComments(token) {
   return fetchCollection(ENDPOINTS.comments, token);
 }
