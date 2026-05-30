@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { fetchPosts } from '../api/conectraApi';
-import { useAuth } from '../features/auth/useAuth';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { fetchPosts, deletePost } from '../api/postsApi';
 import { useI18n } from '../features/i18n/useI18n';
-import { formatRelativeTime, getEntityId, getRelationOne, getUserDisplayName } from '../utils/strapi';
+import { formatRelativeTime } from '../utils/strapi';
 
 function PostsPage() {
-  const { token } = useAuth();
   const { t, locale } = useI18n();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -17,7 +17,7 @@ function PostsPage() {
     setError('');
 
     try {
-      const nextPosts = await fetchPosts(token);
+      const nextPosts = await fetchPosts();
       setPosts(nextPosts);
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : t('posts.loadError');
@@ -25,11 +25,38 @@ function PostsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [t, token]);
+  }, [t]);
 
   useEffect(() => {
     void loadPosts();
   }, [loadPosts]);
+
+  const filteredPosts = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return posts;
+    }
+
+    const normalized = searchTerm.toLowerCase();
+    return posts.filter(
+      (post) =>
+        (post.title ?? '').toLowerCase().includes(normalized) ||
+        (post.body ?? '').toLowerCase().includes(normalized),
+    );
+  }, [posts, searchTerm]);
+
+  const handleDelete = async (postId) => {
+    if (!window.confirm(t('posts.deleteConfirm'))) {
+      return;
+    }
+
+    try {
+      await deletePost(postId);
+      await loadPosts();
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : t('posts.deleteError');
+      setError(message);
+    }
+  };
 
   return (
     <section className="page-section posts-page">
@@ -39,52 +66,58 @@ function PostsPage() {
           <p>{t('posts.subtitle')}</p>
         </div>
 
-        <div className="button-row">
+        <div className="panel-actions">
           <button type="button" className="button button-secondary" onClick={loadPosts}>
             {t('common.refresh')}
           </button>
-          <Link className="button button-primary" to="/posts/new">
-            {t('posts.createButton')}
-          </Link>
+          <button type="button" className="button button-primary" onClick={() => navigate('/posts/new')}>
+            + {t('posts.newPost')}
+          </button>
         </div>
       </header>
 
+      <label className="search-field" htmlFor="posts-search">
+        <span>S</span>
+        <input
+          id="posts-search"
+          type="search"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder={t('posts.searchPlaceholder')}
+        />
+      </label>
+
       {isLoading ? <p className="status-message">{t('posts.loading')}</p> : null}
       {error ? <p className="status-error">{error}</p> : null}
-      {!isLoading && !error && posts.length === 0 ? (
+
+      {!isLoading && !error && filteredPosts.length === 0 ? (
         <p className="status-message">{t('posts.noPosts')}</p>
       ) : null}
 
-      {!isLoading && !error && posts.length > 0 ? (
+      {!isLoading && !error && filteredPosts.length > 0 ? (
         <ul className="post-list">
-          {posts.map((post) => {
-            const postId = String(getEntityId(post) ?? '');
-            const author = getRelationOne(post, 'author');
-            const topic = getRelationOne(post, 'topic');
-            const excerpt = post.content ? `${post.content.slice(0, 220)}${post.content.length > 220 ? '…' : ''}` : t('posts.noContent');
-
-            return (
-              <li key={postId || excerpt} className="post-card">
-                <div className="post-card-header">
-                  <div>
-                    <strong>{topic?.title ?? t('posts.noTopic')}</strong>
-                    <p>{excerpt}</p>
-                  </div>
-                  <div className="post-card-actions">
-                    <Link className="button button-secondary" to={`/posts/${postId}/edit`}>
-                      {t('posts.editButton')}
-                    </Link>
-                  </div>
+          {filteredPosts.map((post) => (
+            <li key={post.id} className="post-card">
+              <div className="post-card-top">
+                <div>
+                  <strong>{post.title}</strong>
+                  <p>{post.author}</p>
                 </div>
+                <span>{formatRelativeTime(post.createdAt, locale, t('format.justNow'))}</span>
+              </div>
 
-                <div className="post-card-meta">
-                  <span>{getUserDisplayName(author, t('format.communityMember'))}</span>
-                  <span>{topic?.title ? `${t('posts.topicLabel')}: ${topic.title}` : t('posts.noTopic')}</span>
-                  <span>{formatRelativeTime(post.postDate ?? post.createdAt, locale, t('format.justNow'))}</span>
-                </div>
-              </li>
-            );
-          })}
+              <p>{post.body}</p>
+
+              <div className="post-card-actions">
+                <Link to={`/posts/${post.id}/edit`} className="button button-secondary">
+                  {t('posts.editPost')}
+                </Link>
+                <button type="button" className="button button-secondary" onClick={() => handleDelete(post.id)}>
+                  {t('posts.deletePost')}
+                </button>
+              </div>
+            </li>
+          ))}
         </ul>
       ) : null}
     </section>
