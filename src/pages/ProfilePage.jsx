@@ -88,7 +88,6 @@ function ProfilePage() {
     return byUser ?? null;
   }, [profiles, user]);
 
-  // Sincronizado com a chave "user" retornada pela API
   const profileUser = getRelationOne(profile, 'user');
   const managedUser = user ?? profileUser ?? null;
   const profileId = profile?.id ?? null;
@@ -267,7 +266,6 @@ function ProfilePage() {
       ? Number.parseInt(profileForm.year.trim(), 10)
       : null;
 
-    // Envia o objeto plano contendo apenas as propriedades pretendidas
     const profileAttributes = {
       displayName: profileForm.displayName.trim(),
       course: toTrimmedOrNull(profileForm.course),
@@ -279,15 +277,14 @@ function ProfilePage() {
       let updatedProfileData;
 
       if (profileId) {
-        // Envia os dados soltos. O conectraApi adiciona o wrapper { data: ... }
         const response = await updateProfile(profileId, profileAttributes, token);
         updatedProfileData = response?.data ?? response;
       } else {
-        // Envia os dados soltos unificados com os metadados iniciais exigidos pelo cURL
+        // CORREÇÃO: Passa a mapear dinamicamente o ID real do utilizador em vez de "2" fixo
         const newProfilePayload = {
           ...profileAttributes,
-          user: managedUser.id,
-          registrationDate: new Date().toISOString().split('T')[0], // Envia YYYY-MM-DD
+          user: Number(managedUser.id),
+          registrationDate: new Date().toISOString().split('T')[0],
           level: 1,
           points: 0,
         };
