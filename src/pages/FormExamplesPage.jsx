@@ -159,6 +159,10 @@ function FormExamplesPage() {
       errors.name = 'Group name is required.';
     }
 
+    if (!groupForm.description.trim()) {
+      errors.description = 'Group description is required.';
+    }
+
     if (!/^\d+$/.test(groupForm.memberLimit) || Number(groupForm.memberLimit) < 1) {
       errors.memberLimit = 'Member limit must be an integer >= 1.';
     }
@@ -444,7 +448,7 @@ function FormExamplesPage() {
               />
             </FormField>
 
-            <FormField id="group-description" label="Description">
+            <FormField id="group-description" label="Description" error={groupErrors.description}>
               <textarea
                 id="group-description"
                 rows={4}

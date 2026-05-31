@@ -38,10 +38,23 @@ export async function createPost(payload, token) {
 
 export async function createGroup(payload, token) {
   const memberLimit = toOptionalInteger(payload.memberLimit);
+  const creator = toOptionalInteger(payload.creator);
+  const area = toOptionalInteger(payload.area);
+
+  const name = payload.name?.trim();
+  const description = payload.description?.trim();
+
+  if (!name) {
+    throw new Error('Group name is required.');
+  }
+
+  if (!description) {
+    throw new Error('Group description is required.');
+  }
 
   const data = {
-    name: payload.name.trim(),
-    description: payload.description.trim(),
+    name,
+    description,
     status: payload.status,
   };
 
@@ -49,11 +62,19 @@ export async function createGroup(payload, token) {
     data.memberLimit = memberLimit;
   }
 
-  if (payload.location.trim()) {
+  if (creator) {
+    data.creator = creator;
+  }
+
+  if (area) {
+    data.area = area;
+  }
+
+  if (payload.location?.trim()) {
     data.location = payload.location.trim();
   }
 
-  if (payload.schedule.trim()) {
+  if (payload.schedule?.trim()) {
     data.schedule = payload.schedule.trim();
   }
 
@@ -65,3 +86,4 @@ export async function createGroup(payload, token) {
 
   return normalizeStrapiSingle(response);
 }
+

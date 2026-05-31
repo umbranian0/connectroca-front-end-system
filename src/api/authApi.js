@@ -84,4 +84,5 @@ export async function requestPasswordReset(email) {
 
 export async function fetchCurrentUser(token) {
   return request('/api/users/me', { token });
+  
 }

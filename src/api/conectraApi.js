@@ -115,3 +115,13 @@ export async function updateProfile(profileId, profileData, token) {
 
   return normalizeStrapiSingle(payload);
 }
+
+export async function createGroup(groupData, token) {
+  const payload = await request(ENDPOINTS.groups, {
+    method: 'POST',
+    token,
+    body: { data: groupData },
+  });
+
+  return normalizeStrapiSingle(payload);
+}
