@@ -46,10 +46,12 @@ function withPopulate(endpoint) {
 
 function withEntityId(endpoint, id) {
   const [basePath, queryString] = endpoint.split('?');
+  const cleanBasePath = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+  
   if (!queryString) {
-    return `${basePath}/${id}`;
+    return `${cleanBasePath}/${id}`;
   }
-  return `${basePath}/${id}?${queryString}`;
+  return `${cleanBasePath}/${id}?${queryString}`;
 }
 
 async function fetchCollection(endpoint, token) {
