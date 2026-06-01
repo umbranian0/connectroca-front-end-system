@@ -84,36 +84,35 @@ function GroupChatPage() {
   }, [activeTopic, posts]);
 
   const handleSendMessage = useCallback(async () => {
-  if (!newMessage.trim() || !activeTopic) {
-    return;
-  }
+    if (!newMessage.trim() || !activeTopic || !user?.id) {
+      return;
+    }
 
-  setIsSending(true);
-  setError('');
+    setIsSending(true);
+    setError('');
 
-  try {
-    const createdPost = await createPost(
-      {
-        content: newMessage.trim(),
-        topicId: getEntityId(activeTopic),
-        // 2. Envia o ID do usuário logado obtido do seu contexto de autenticação
-        author: 2
-      },
-      token,
-    );
+    try {
+      const createdPost = await createPost(
+        {
+          content: newMessage.trim(),
+          topicId: getEntityId(activeTopic),
+          authorId: getEntityId(user),
+        },
+        token,
+      );
 
-    setPosts((currentPosts) => [...currentPosts, createdPost]);
-    setNewMessage('');
-  } catch (requestError) {
-    const message =
-      requestError instanceof Error
-        ? requestError.message
-        : 'Não foi possível enviar a mensagem.';
-    setError(message);
-  } finally {
-    setIsSending(false);
-  }
-}, [activeTopic, newMessage, token, user]);
+      setPosts((currentPosts) => [...currentPosts, createdPost]);
+      setNewMessage('');
+    } catch (requestError) {
+      const message =
+        requestError instanceof Error
+          ? requestError.message
+          : 'Não foi possível enviar a mensagem.';
+      setError(message);
+    } finally {
+      setIsSending(false);
+    }
+  }, [activeTopic, newMessage, token, user]);
 
   return (
     <section className="page-section group-chat-page">
@@ -177,7 +176,7 @@ function GroupChatPage() {
           type="button"
           className="button button-primary"
           onClick={() => void handleSendMessage()}
-          disabled={isLoading || isSending || !newMessage.trim() || !activeTopic}
+          disabled={isLoading || isSending || !newMessage.trim() || !activeTopic || !user?.id}
         >
           {isSending ? 'Enviando...' : 'Enviar'}
         </button>
