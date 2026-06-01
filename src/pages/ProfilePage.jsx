@@ -49,6 +49,7 @@ function ProfilePage() {
   const [accountStatus, setAccountStatus] = useState({ isSubmitting: false, error: '', success: '' });
   const [profileStatus, setProfileStatus] = useState({ isSubmitting: false, error: '', success: '' });
 
+  // 1. Função de carregamento isolada e segura
   const loadProfile = useCallback(async () => {
     setIsLoading(true);
     setError('');
@@ -61,154 +62,150 @@ function ProfilePage() {
         fetchUserAreas(token),
       ]);
 
-      setProfiles(nextProfiles);
-      setTopics(nextTopics);
-      setMaterials(nextMaterials);
-      setUserAreas(nextUserAreas);
+      setProfiles(nextProfiles ?? []);
+      setTopics(nextTopics ?? []);
+      setMaterials(nextMaterials ?? []);
+      setUserAreas(nextUserAreas ?? []);
     } catch (requestError) {
+      console.error('Erro ao carregar dados do perfil:', requestError);
       const message =
-        requestError instanceof Error ? requestError.message : 'Unable to load profile data.';
+        requestError instanceof Error ? requestError.message : 'Não foi possível carregar os dados.';
       setError(message);
     } finally {
       setIsLoading(false);
     }
   }, [token]);
 
+  // Dispara o carregamento apenas se estiver autenticado
   useEffect(() => {
-    void loadProfile();
-  }, [loadProfile]);
+    if (isAuthenticated && token) {
+      void loadProfile();
+    }
+  }, [loadProfile, isAuthenticated, token]);
 
+  // 2. Extração segura do ID do Utilizador Autenticado
+  const loggedUserId = useMemo(() => {
+    if (!user) return null;
+    return user.id ?? user.documentId ?? user.attributes?.id ?? null;
+  }, [user]);
+
+  // 3. Descoberta do Perfil na lista (Memorizado com segurança)
   const profile = useMemo(() => {
-    const loggedUserId = getEntityId(user);
-    const byUser = profiles.find((entry) => {
-      const relationUser = getRelationOne(entry, 'user');
-      return getEntityId(relationUser) === loggedUserId;
-    });
+    if (!loggedUserId || !Array.isArray(profiles)) return null;
 
-    return byUser ?? null;
-  }, [profiles, user]);
+    return profiles.find((entry) => {
+      const relationUser = getRelationOne(entry, 'user');
+      const relId = getEntityId(relationUser);
+      return relId === loggedUserId;
+    }) ?? null;
+  }, [profiles, loggedUserId]);
 
   const profileUser = getRelationOne(profile, 'user');
   const managedUser = user ?? profileUser ?? null;
   const profileId = profile?.id ?? null;
 
+  // 4. Sincronização controlada do formulário de Conta
   useEffect(() => {
-    setAccountForm({
-      username: managedUser?.username ?? '',
-      email: managedUser?.email ?? '',
-    });
-  }, [managedUser?.id, managedUser?.username, managedUser?.email]);
+    if (managedUser) {
+      setAccountForm({
+        username: managedUser.username ?? managedUser.attributes?.username ?? '',
+        email: managedUser.email ?? managedUser.attributes?.email ?? '',
+      });
+    }
+  }, [managedUser]);
 
+  // 5. Sincronização controlada do formulário de Perfil
   useEffect(() => {
-    setProfileForm({
-      displayName: profile?.displayName ?? '',
-      course: profile?.course ?? '',
-      year: profile?.year != null ? String(profile.year) : '',
-      bio: profile?.bio ?? '',
-    });
-  }, [profile?.id, profile?.displayName, profile?.course, profile?.year, profile?.bio]);
+    if (profile) {
+      setProfileForm({
+        displayName: profile.displayName ?? '',
+        course: profile.course ?? '',
+        year: profile.year != null ? String(profile.year) : '',
+        bio: profile.bio ?? '',
+      });
+    } else {
+      setProfileForm({ displayName: '', course: '', year: '', bio: '' });
+    }
+  }, [profile]);
 
-  const displayName = profile?.displayName ?? getUserDisplayName(profileUser ?? managedUser);
-  const level = toNumber(profile?.level, 5);
-  const points = toNumber(profile?.points, 240);
+  // 6. Dados Computados protegidos contra dados em falta (Fallback total)
+  const displayName = useMemo(() => {
+    if (profile?.displayName) return profile.displayName;
+    return getUserDisplayName(managedUser);
+  }, [profile, managedUser]);
+
+  const level = toNumber(profile?.level, 1);
+  const points = toNumber(profile?.points, 0);
 
   const authoredTopics = useMemo(() => {
-    const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
-    return topics.filter((topic) => getEntityId(getRelationOne(topic, 'user')) === authorId);
-  }, [managedUser, profileUser, topics]);
+    if (!loggedUserId || !Array.isArray(topics)) return [];
+    return topics.filter((topic) => {
+      const topicUser = getRelationOne(topic, 'user');
+      return getEntityId(topicUser) === loggedUserId;
+    });
+  }, [topics, loggedUserId]);
 
   const authoredMaterials = useMemo(() => {
-    const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
-    return materials.filter((material) => getEntityId(getRelationOne(material, 'user')) === authorId);
-  }, [materials, managedUser, profileUser]);
+    if (!loggedUserId || !Array.isArray(materials)) return [];
+    return materials.filter((material) => {
+      const matUser = getRelationOne(material, 'user');
+      return getEntityId(matUser) === loggedUserId;
+    });
+  }, [materials, loggedUserId]);
 
   const interests = useMemo(() => {
     const listedInterests = Array.isArray(profile?.interests) ? profile.interests : [];
+    if (listedInterests.length > 0) return listedInterests;
 
-    if (listedInterests.length > 0) {
-      return listedInterests;
-    }
+    if (!loggedUserId || !Array.isArray(userAreas)) return [];
 
     return userAreas
-      .filter(
-        (entry) =>
-          getEntityId(getRelationOne(entry, 'user')) ===
-          (getEntityId(profileUser) ?? getEntityId(managedUser)),
-      )
-      .map((entry) => {
-        const area = getRelationOne(entry, 'area');
-        return getAreaLabel(area);
-      })
+      .filter((entry) => getEntityId(getRelationOne(entry, 'user')) === loggedUserId)
+      .map((entry) => getAreaLabel(getRelationOne(entry, 'area')))
       .filter(Boolean)
       .slice(0, 6);
-  }, [managedUser, profile?.interests, profileUser, userAreas]);
+  }, [loggedUserId, profile?.interests, userAreas]);
 
-  const badges =
-    Array.isArray(profile?.badges) && profile.badges.length > 0 ? profile.badges : FALLBACK_BADGES;
+  const badges = useMemo(() => {
+    return Array.isArray(profile?.badges) && profile.badges.length > 0
+      ? profile.badges
+      : FALLBACK_BADGES;
+  }, [profile?.badges]);
 
+  // 7. Manipuladores de Eventos (Handlers)
   const handleAccountChange = (field) => (event) => {
-    setAccountForm((current) => ({
-      ...current,
-      [field]: event.target.value,
-    }));
+    setAccountForm((current) => ({ ...current, [field]: event.target.value }));
   };
 
   const handleProfileChange = (field) => (event) => {
-    setProfileForm((current) => ({
-      ...current,
-      [field]: event.target.value,
-    }));
+    setProfileForm((current) => ({ ...current, [field]: event.target.value }));
   };
 
   const validateAccount = () => {
     const nextErrors = {};
-
-    if (!accountForm.username.trim()) {
-      nextErrors.username = 'Username is required.';
-    }
-
-    if (!accountForm.email.includes('@')) {
-      nextErrors.email = 'A valid email is required.';
-    }
-
+    if (!accountForm.username.trim()) nextErrors.username = 'O nome de utilizador é obrigatório.';
+    if (!accountForm.email.includes('@')) nextErrors.email = 'Insere um email válido.';
     return nextErrors;
   };
 
   const validateProfile = () => {
     const nextErrors = {};
-
-    if (!profileForm.displayName.trim()) {
-      nextErrors.displayName = 'Display name is required.';
-    }
-
+    if (!profileForm.displayName.trim()) nextErrors.displayName = 'O nome de exibição é obrigatório.';
     if (profileForm.year.trim()) {
       const parsedYear = Number.parseInt(profileForm.year, 10);
-
       if (!Number.isInteger(parsedYear) || parsedYear < 1) {
-        nextErrors.year = 'Year must be an integer >= 1.';
+        nextErrors.year = 'O ano deve ser um número inteiro maior ou igual a 1.';
       }
     }
-
     return nextErrors;
   };
 
   const handleAccountSubmit = async (event) => {
     event.preventDefault();
-
     const nextErrors = validateAccount();
     setAccountErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length > 0) {
-      setAccountStatus((current) => ({ ...current, success: '' }));
-      return;
-    }
-
-    if (!isAuthenticated || !managedUser?.id) {
-      setAccountStatus({
-        isSubmitting: false,
-        error: 'Login is required to update account data.',
-        success: '',
-      });
+    if (Object.keys(nextErrors).length > 0 || !isAuthenticated || !loggedUserId) {
       return;
     }
 
@@ -216,7 +213,7 @@ function ProfilePage() {
 
     try {
       const updated = await updateUser(
-        managedUser.id,
+        loggedUserId,
         {
           username: accountForm.username.trim(),
           email: accountForm.email.trim(),
@@ -227,44 +224,36 @@ function ProfilePage() {
       setAccountStatus({
         isSubmitting: false,
         error: '',
-        success: 'Account data updated successfully.',
+        success: 'Dados de conta atualizados com sucesso.',
       });
 
-      setAccountForm({
-        username: updated?.username ?? accountForm.username,
-        email: updated?.email ?? accountForm.email,
-      });
+      if (updated) {
+        setAccountForm({
+          username: updated.username ?? accountForm.username,
+          email: updated.email ?? accountForm.email,
+        });
+      }
     } catch (requestError) {
-      const message = requestError instanceof Error ? requestError.message : 'Unable to update account.';
+      const message = requestError instanceof Error ? requestError.message : 'Não foi possível atualizar a conta.';
       setAccountStatus({ isSubmitting: false, error: message, success: '' });
     }
   };
 
   const handleProfileSubmit = async (event) => {
     event.preventDefault();
-
     const nextErrors = validateProfile();
     setProfileErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length > 0) {
-      setProfileStatus((current) => ({ ...current, success: '' }));
-      return;
-    }
+    if (Object.keys(nextErrors).length > 0) return;
 
-    if (!isAuthenticated || !managedUser?.id) {
-      setProfileStatus({
-        isSubmitting: false,
-        error: 'Login is required to update profile data.',
-        success: '',
-      });
+    if (!isAuthenticated || !loggedUserId) {
+      setProfileStatus({ isSubmitting: false, error: 'Sessão expirada ou utilizador não encontrado.', success: '' });
       return;
     }
 
     setProfileStatus({ isSubmitting: true, error: '', success: '' });
 
-    const yearValue = profileForm.year.trim()
-      ? Number.parseInt(profileForm.year.trim(), 10)
-      : null;
+    const yearValue = profileForm.year.trim() ? Number.parseInt(profileForm.year.trim(), 10) : null;
 
     const profileAttributes = {
       displayName: profileForm.displayName.trim(),
@@ -274,79 +263,78 @@ function ProfilePage() {
     };
 
     try {
-      let updatedProfileData;
-
       if (profileId) {
-        const response = await updateProfile(profileId, profileAttributes, token);
-        updatedProfileData = response?.data ?? response;
+        await updateProfile(profileId, profileAttributes, token);
       } else {
-        // CORREÇÃO: Passa a mapear dinamicamente o ID real do utilizador em vez de "2" fixo
         const newProfilePayload = {
           ...profileAttributes,
-          user: Number(managedUser.id),
+          user: Number(loggedUserId),
           registrationDate: new Date().toISOString().split('T')[0],
           level: 1,
           points: 0,
         };
-
-        const response = await createProfile(newProfilePayload, token);
-        updatedProfileData = response?.data ?? response;
+        await createProfile(newProfilePayload, token);
       }
+
+      // Recarrega os dados do servidor para atualizar as relações de forma limpa
+      await loadProfile();
 
       setProfileStatus({
         isSubmitting: false,
         error: '',
-        success: profileId ? 'Profile data updated successfully.' : 'Profile created successfully.',
+        success: profileId ? 'Perfil atualizado com sucesso.' : 'Perfil criado com sucesso.',
       });
-
-      if (updatedProfileData) {
-        setProfiles((prevProfiles) =>
-          profileId
-            ? prevProfiles.map((p) => (p.id === profileId ? { ...p, ...updatedProfileData } : p))
-            : [...prevProfiles, updatedProfileData],
-        );
-      }
-
-      await loadProfile();
     } catch (requestError) {
       console.error('ERRO COMPLETO DA REQUISIÇÃO:', requestError);
-      const message = requestError instanceof Error ? requestError.message : 'Unable to update profile.';
+      const message = requestError instanceof Error ? requestError.message : 'Erro ao guardar dados do perfil.';
       setProfileStatus({ isSubmitting: false, error: message, success: '' });
     }
   };
+
+  // 8. BARREIRAS DE SEGURANÇA (Evitam renderizar HTML com dados nulos enquanto carrega)
+  if (!isAuthenticated) {
+    return (
+      <section className="page-section profile-page">
+        <p className="status-message">Por favor, faz login para gerir as tuas informações.</p>
+      </section>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <section className="page-section profile-page">
+        <p className="status-message">A carregar dados do perfil...</p>
+      </section>
+    );
+  }
 
   return (
     <section className="page-section profile-page">
       <header className="hero-card profile-hero">
         <div>
           <h1>{displayName}</h1>
-          <p>{profile?.course ?? 'Eng. Informática'}</p>
-          <strong>Level {level}</strong>
+          <p>{profile?.course ?? 'Sem Curso Definido'}</p>
+          <strong>Nível {level}</strong>
         </div>
 
         <div>
-          <p>Registered: {formatDateTime(profile?.registrationDate ?? profile?.createdAt)}</p>
-          <p>{points} points</p>
+          <p>Registado em: {formatDateTime(profile?.registrationDate ?? profile?.createdAt)}</p>
+          <p>{points} pontos</p>
         </div>
       </header>
 
-      {!isAuthenticated ? (
-        <p className="status-message">Login to manage your account and profile information.</p>
-      ) : null}
-
-      {isLoading ? <p className="status-message">Loading profile...</p> : null}
       {error ? <p className="status-error">{error}</p> : null}
 
       <div className="stats-grid">
-        <StatCard icon="T" value={authoredTopics.length} label="Topics" />
-        <StatCard icon="M" value={authoredMaterials.length} label="Materials" />
-        <StatCard icon="P" value={points} label="Points" />
-        <StatCard icon="S" value={interests.length} label="Specialties" />
+        <StatCard icon="T" value={authoredTopics.length} label="Tópicos" />
+        <StatCard icon="M" value={authoredMaterials.length} label="Materiais" />
+        <StatCard icon="P" value={points} label="Pontos" />
+        <StatCard icon="S" value={interests.length} label="Especialidades" />
       </div>
 
       <div className="content-grid">
         <article className="content-panel">
-          <h2>Account Management</h2>
+          <h2>Gestão de Conta</h2>
 
           <form className="example-form" onSubmit={handleAccountSubmit} noValidate>
             <label className="form-field" htmlFor="profile-username">
@@ -372,12 +360,8 @@ function ProfilePage() {
             </label>
 
             <div className="inline-actions">
-              <button
-                type="submit"
-                className="button button-primary"
-                disabled={accountStatus.isSubmitting || !isAuthenticated}
-              >
-                {accountStatus.isSubmitting ? 'Saving account...' : 'Save account'}
+              <button type="submit" className="button button-primary" disabled={accountStatus.isSubmitting}>
+                {accountStatus.isSubmitting ? 'A guardar conta...' : 'Guardar Conta'}
               </button>
             </div>
           </form>
@@ -387,11 +371,11 @@ function ProfilePage() {
         </article>
 
         <article className="content-panel">
-          <h2>Profile Management</h2>
+          <h2>Gestão de Perfil</h2>
 
           <form className="example-form" onSubmit={handleProfileSubmit} noValidate>
             <label className="form-field" htmlFor="profile-display-name">
-              <span>Display name</span>
+              <span>Nome de Exibição</span>
               <input
                 id="profile-display-name"
                 type="text"
@@ -402,7 +386,7 @@ function ProfilePage() {
             </label>
 
             <label className="form-field" htmlFor="profile-course">
-              <span>Course</span>
+              <span>Curso</span>
               <input
                 id="profile-course"
                 type="text"
@@ -412,7 +396,7 @@ function ProfilePage() {
             </label>
 
             <label className="form-field" htmlFor="profile-year">
-              <span>Year</span>
+              <span>Ano Curricular</span>
               <input
                 id="profile-year"
                 type="number"
@@ -424,7 +408,7 @@ function ProfilePage() {
             </label>
 
             <label className="form-field" htmlFor="profile-bio">
-              <span>Bio</span>
+              <span>Biografia</span>
               <textarea
                 id="profile-bio"
                 rows={4}
@@ -434,12 +418,8 @@ function ProfilePage() {
             </label>
 
             <div className="inline-actions">
-              <button
-                type="submit"
-                className="button button-primary"
-                disabled={profileStatus.isSubmitting || !isAuthenticated}
-              >
-                {profileStatus.isSubmitting ? 'Saving profile...' : 'Save profile'}
+              <button type="submit" className="button button-primary" disabled={profileStatus.isSubmitting}>
+                {profileStatus.isSubmitting ? 'A guardar perfil...' : 'Guardar Perfil'}
               </button>
             </div>
           </form>
