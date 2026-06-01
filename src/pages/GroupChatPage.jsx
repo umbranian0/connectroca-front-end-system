@@ -176,7 +176,7 @@ function GroupChatPage() {
           type="button"
           className="button button-primary"
           onClick={() => void handleSendMessage()}
-          disabled={isLoading || isSending || !newMessage.trim() || !activeTopic || !user?.id}
+          disabled={isLoading || isSending || !newMessage.trim() || !activeTopic}
         >
           {isSending ? 'Enviando...' : 'Enviar'}
         </button>
