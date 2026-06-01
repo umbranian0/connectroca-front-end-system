@@ -42,6 +42,30 @@ export async function createPost(payload, token) {
   return normalizeStrapiSingle(response);
 }
 
+export async function updatePost(postId, payload, token) {
+  if (!postId) {
+    throw new Error('Post ID is required to update a post.');
+  }
+
+  const topicId = toOptionalInteger(payload.topicId);
+  const data = {
+    content: payload.content.trim(),
+    postDate: payload.postDate,
+  };
+
+  if (topicId) {
+    data.topic = topicId;
+  }
+
+  const response = await request(`${POSTS_ENDPOINT}/${postId}`, {
+    method: 'PUT',
+    token,
+    body: { data },
+  });
+
+  return normalizeStrapiSingle(response);
+}
+
 export async function createGroup(payload, token) {
   const memberLimit = toOptionalInteger(payload.memberLimit);
 
