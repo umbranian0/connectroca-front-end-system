@@ -107,7 +107,7 @@ function DashboardPage() {
   );
 
   const userPosts = useMemo(
-    () => posts.filter((post) => getEntityId(getRelationOne(post, 'author')) === currentUserId),
+    () => posts.filter((post) => getEntityId(getRelationOne(post, 'user')) === currentUserId),
     [currentUserId, posts],
   );
 
@@ -138,7 +138,7 @@ function DashboardPage() {
 
     userPosts.forEach((post) => {
       const topic = getRelationOne(post, 'topic');
-      const author = getRelationOne(post, 'author');
+      const author = getRelationOne(post, 'user');
 
       items.push({
         id: `post-${getEntityId(post)}`,

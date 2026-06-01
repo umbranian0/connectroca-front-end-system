@@ -146,7 +146,7 @@ function TopicDetailPage() {
         ) : (
           topicPosts.map((post) => {
             const postId = String(getEntityId(post) ?? '');
-            const author = getRelationOne(post, 'author');
+            const author = getRelationOne(post, 'user');
             const postComments = commentsByPost.get(postId) ?? [];
 
             return (
