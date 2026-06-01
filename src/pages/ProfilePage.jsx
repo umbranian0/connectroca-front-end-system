@@ -114,12 +114,12 @@ function ProfilePage() {
 
   const authoredTopics = useMemo(() => {
     const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
-    return topics.filter((topic) => getEntityId(getRelationOne(topic, 'creator')) === authorId);
+    return topics.filter((topic) => getEntityId(getRelationOne(topic, 'user')) === authorId);
   }, [managedUser, profileUser, topics]);
 
   const authoredMaterials = useMemo(() => {
     const authorId = getEntityId(profileUser) ?? getEntityId(managedUser);
-    return materials.filter((material) => getEntityId(getRelationOne(material, 'author')) === authorId);
+    return materials.filter((material) => getEntityId(getRelationOne(material, 'user')) === authorId);
   }, [materials, managedUser, profileUser]);
 
   const interests = useMemo(() => {
@@ -216,6 +216,7 @@ function ProfilePage() {
 
     try {
       const updated = await updateUser(
+        managedUser.id,
         {
           username: accountForm.username.trim(),
           email: accountForm.email.trim(),
@@ -265,7 +266,7 @@ function ProfilePage() {
       ? Number.parseInt(profileForm.year.trim(), 10)
       : null;
 
-    const payload = {
+    const profileAttributes = {
       displayName: profileForm.displayName.trim(),
       course: toTrimmedOrNull(profileForm.course),
       bio: toTrimmedOrNull(profileForm.bio),
@@ -273,28 +274,42 @@ function ProfilePage() {
     };
 
     try {
+      let updatedProfileData;
+
       if (profileId) {
-        await updateProfile(profileId, payload, token);
+        const response = await updateProfile(profileId, profileAttributes, token);
+        updatedProfileData = response?.data ?? response;
       } else {
-        await createProfile(
-          {
-            ...payload,
-            user: managedUser.id,
-          },
-          token,
-        );
+        // CORREÇÃO: Passa a mapear dinamicamente o ID real do utilizador em vez de "2" fixo
+        const newProfilePayload = {
+          ...profileAttributes,
+          user: Number(managedUser.id),
+          registrationDate: new Date().toISOString().split('T')[0],
+          level: 1,
+          points: 0,
+        };
+
+        const response = await createProfile(newProfilePayload, token);
+        updatedProfileData = response?.data ?? response;
       }
 
       setProfileStatus({
         isSubmitting: false,
         error: '',
-        success: profileId
-          ? 'Profile data updated successfully.'
-          : 'Profile created successfully.',
+        success: profileId ? 'Profile data updated successfully.' : 'Profile created successfully.',
       });
+
+      if (updatedProfileData) {
+        setProfiles((prevProfiles) =>
+          profileId
+            ? prevProfiles.map((p) => (p.id === profileId ? { ...p, ...updatedProfileData } : p))
+            : [...prevProfiles, updatedProfileData],
+        );
+      }
 
       await loadProfile();
     } catch (requestError) {
+      console.error('ERRO COMPLETO DA REQUISIÇÃO:', requestError);
       const message = requestError instanceof Error ? requestError.message : 'Unable to update profile.';
       setProfileStatus({ isSubmitting: false, error: message, success: '' });
     }
@@ -342,7 +357,7 @@ function ProfilePage() {
                 value={accountForm.username}
                 onChange={handleAccountChange('username')}
               />
-              {accountErrors.username ? <small className="form-error">{accountErrors.username}</small> : null}
+              {accountErrors.username ? <p className="status-error">{accountErrors.username}</p> : null}
             </label>
 
             <label className="form-field" htmlFor="profile-email">
@@ -353,11 +368,15 @@ function ProfilePage() {
                 value={accountForm.email}
                 onChange={handleAccountChange('email')}
               />
-              {accountErrors.email ? <small className="form-error">{accountErrors.email}</small> : null}
+              {accountErrors.email ? <p className="status-error">{accountErrors.email}</p> : null}
             </label>
 
             <div className="inline-actions">
-              <button type="submit" className="button button-primary" disabled={accountStatus.isSubmitting || !isAuthenticated}>
+              <button
+                type="submit"
+                className="button button-primary"
+                disabled={accountStatus.isSubmitting || !isAuthenticated}
+              >
                 {accountStatus.isSubmitting ? 'Saving account...' : 'Save account'}
               </button>
             </div>
@@ -379,7 +398,7 @@ function ProfilePage() {
                 value={profileForm.displayName}
                 onChange={handleProfileChange('displayName')}
               />
-              {profileErrors.displayName ? <small className="form-error">{profileErrors.displayName}</small> : null}
+              {profileErrors.displayName ? <p className="status-error">{profileErrors.displayName}</p> : null}
             </label>
 
             <label className="form-field" htmlFor="profile-course">
@@ -401,7 +420,7 @@ function ProfilePage() {
                 value={profileForm.year}
                 onChange={handleProfileChange('year')}
               />
-              {profileErrors.year ? <small className="form-error">{profileErrors.year}</small> : null}
+              {profileErrors.year ? <p className="status-error">{profileErrors.year}</p> : null}
             </label>
 
             <label className="form-field" htmlFor="profile-bio">
@@ -415,7 +434,11 @@ function ProfilePage() {
             </label>
 
             <div className="inline-actions">
-              <button type="submit" className="button button-primary" disabled={profileStatus.isSubmitting || !isAuthenticated}>
+              <button
+                type="submit"
+                className="button button-primary"
+                disabled={profileStatus.isSubmitting || !isAuthenticated}
+              >
                 {profileStatus.isSubmitting ? 'Saving profile...' : 'Save profile'}
               </button>
             </div>
@@ -455,4 +478,3 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
-

@@ -12,6 +12,8 @@ import GroupsPage from '../pages/GroupsPage';
 import LoginPage from '../pages/LoginPage';
 import MaterialsPage from '../pages/MaterialsPage';
 import NotFoundPage from '../pages/NotFoundPage';
+import PostEditorPage from '../pages/PostEditorPage';
+import PostsPage from '../pages/PostsPage';
 import ProfilePage from '../pages/ProfilePage';
 import RegisterPage from '../pages/RegisterPage';
 import TopicDetailPage from '../pages/TopicDetailPage';
@@ -28,6 +30,9 @@ function AppRouter() {
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/groups/:groupId/chat" element={<GroupChatPage />} />
           <Route path="/groups/:groupId/members" element={<GroupMembersPage />} />
+          <Route path="/posts" element={<PostsPage />} />
+          <Route path="/posts/new" element={<PostEditorPage />} />
+          <Route path="/posts/:postId/edit" element={<PostEditorPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/examples/forms" element={<FormExamplesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
