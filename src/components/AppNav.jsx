@@ -4,6 +4,7 @@ import { useI18n } from '../features/i18n/useI18n';
 const NAV_ITEMS = [
   { to: '/', labelKey: 'nav.home', icon: 'H' },
   { to: '/forum', labelKey: 'nav.forum', icon: 'F' },
+  { to: '/posts', labelKey: 'nav.posts', icon: 'P' },
   { to: '/materials', labelKey: 'nav.materials', icon: 'M' },
   { to: '/groups', labelKey: 'nav.groups', icon: 'G' },
   { to: '/examples/forms', labelKey: 'nav.examples', icon: 'X' },
