@@ -17,7 +17,7 @@ export async function createAccount(payload, token) {
 
 export async function createPost(payload, token) {
   const topicId = toOptionalInteger(payload.topicId);
-  const authorId = "1"; // Garante que vira número inteiro
+  const authorId = "pgum7gr1i4ukzznski3hzxs7"; // Garante que vira número inteiro
 
   const data = {
     content: payload.content.trim(),
@@ -30,7 +30,7 @@ export async function createPost(payload, token) {
 
   // Se o autor existir e for um ID válido, anexa ao payload
   if (authorId) {
-    data.user = "1"; 
+    data.user = "pgum7gr1i4ukzznski3hzxs7"; 
   }
 
   const response = await request(POSTS_ENDPOINT, {

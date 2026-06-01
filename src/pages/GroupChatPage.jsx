@@ -96,7 +96,7 @@ function GroupChatPage() {
         {
           content: newMessage.trim(),
           topicId: getEntityId(activeTopic),
-          authorId: "1",
+          authorId: "pgum7gr1i4ukzznski3hzxs75",
         },
         token,
       );
