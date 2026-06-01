@@ -143,7 +143,7 @@ function GroupChatPage() {
         ) : null}
 
         {conversationMessages.map((post, index) => {
-          const author = getRelationOne(post, 'author');
+          const author = getRelationOne(post, 'user');
           const isAlternate = index % 2 === 1;
 
           return (

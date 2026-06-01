@@ -30,7 +30,7 @@ export async function createPost(payload, token) {
 
   // Se o autor existir e for um ID válido, anexa ao payload
   if (authorId) {
-    data.author = authorId; 
+    data.user = authorId; 
   }
 
   const response = await request(POSTS_ENDPOINT, {
