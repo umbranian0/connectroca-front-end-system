@@ -1,6 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { fetchComments, fetchPosts, fetchTopics } from '../api/conectraApi';
+import { createPost } from '../api/formsApi';
 import { useAuth } from '../features/auth/useAuth';
 import { useI18n } from '../features/i18n/useI18n';
 import {
@@ -13,11 +14,13 @@ import {
 
 function TopicDetailPage() {
   const { topicId } = useParams();
-  const { token } = useAuth();
+  const { token, isAuthenticated } = useAuth();
   const { t, locale } = useI18n();
   const [topics, setTopics] = useState([]);
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState([]);
+  const [replyContent, setReplyContent] = useState('');
+  const [replyStatus, setReplyStatus] = useState({ isSubmitting: false, error: '', success: '' });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -54,6 +57,40 @@ function TopicDetailPage() {
       null
     );
   }, [topicId, topics]);
+
+  const handleReplySubmit = async (event) => {
+    event.preventDefault();
+
+    if (!replyContent.trim()) {
+      setReplyStatus({ isSubmitting: false, error: t('topicDetail.replyRequired'), success: '' });
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setReplyStatus({ isSubmitting: false, error: t('topicDetail.replyLoginRequired'), success: '' });
+      return;
+    }
+
+    setReplyStatus({ isSubmitting: true, error: '', success: '' });
+
+    try {
+      const topicRelationId = String(getEntityId(topic) ?? topicId ?? '');
+      await createPost(
+        {
+          content: replyContent,
+          topicId: topicRelationId,
+          postDate: new Date().toISOString(),
+        },
+        token,
+      );
+      setReplyContent('');
+      setReplyStatus({ isSubmitting: false, error: '', success: t('topicDetail.replySuccess') });
+      await loadThread();
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : t('topicDetail.replyError');
+      setReplyStatus({ isSubmitting: false, error: message, success: '' });
+    }
+  };
 
   const topicPosts = useMemo(() => {
     return posts
@@ -137,6 +174,37 @@ function TopicDetailPage() {
       <article className="topic-opening-post">
         <p>{topic.description ?? t('topicDetail.noDescription')}</p>
       </article>
+
+      <section className="reply-form">
+        <form onSubmit={handleReplySubmit}>
+          <label htmlFor="topic-reply" className="form-label">
+            {t('topicDetail.replyLabel')}
+          </label>
+          <textarea
+            id="topic-reply"
+            value={replyContent}
+            onChange={(event) => setReplyContent(event.target.value)}
+            rows={4}
+            placeholder={t('topicDetail.replyPlaceholder')}
+            disabled={!isAuthenticated || replyStatus.isSubmitting}
+          />
+
+          {replyStatus.error ? <p className="status-error">{replyStatus.error}</p> : null}
+          {replyStatus.success ? <p className="status-message">{replyStatus.success}</p> : null}
+
+          <button
+            type="submit"
+            className="button button-primary"
+            disabled={!isAuthenticated || replyStatus.isSubmitting}
+          >
+            {replyStatus.isSubmitting ? t('topicDetail.replySending') : t('topicDetail.replySubmit')}
+          </button>
+
+          {!isAuthenticated ? (
+            <p className="status-message">{t('topicDetail.replyLoginHint')}</p>
+          ) : null}
+        </form>
+      </section>
 
       <ul className="thread-list">
         {topicPosts.length === 0 ? (

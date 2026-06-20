@@ -35,8 +35,8 @@ docker compose up --build -d
 
 ```powershell
 cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\frontend_conectra"
-Copy-Item .env.example .env   # first run only
-docker compose up --build -d
+Copy-Item .env.example .env
+docker compose up --build -docker compose up --build -d
 ```
 
 Open:
